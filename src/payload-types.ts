@@ -72,6 +72,9 @@ export interface Config {
     media: Media;
     categories: Category;
     users: User;
+    questions: Question;
+    tests: Test;
+    'test-results': TestResult;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -88,6 +91,9 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    questions: QuestionsSelect<false> | QuestionsSelect<true>;
+    tests: TestsSelect<false> | TestsSelect<true>;
+    'test-results': TestResultsSelect<false> | TestResultsSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -745,6 +751,141 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "questions".
+ */
+export interface Question {
+  id: number;
+  /**
+   * Текст вопроса
+   */
+  question: string;
+  /**
+   * Категория вопроса
+   */
+  category: 'react' | 'nextjs' | 'javascript' | 'typescript' | 'css-html' | 'general';
+  /**
+   * Уровень сложности
+   */
+  difficulty: 'easy' | 'medium' | 'hard';
+  /**
+   * Варианты ответов
+   */
+  options: {
+    text: string;
+    isCorrect?: boolean | null;
+    id?: string | null;
+  }[];
+  /**
+   * Объяснение правильного ответа
+   */
+  explanation?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tests".
+ */
+export interface Test {
+  id: number;
+  /**
+   * Название теста
+   */
+  title: string;
+  /**
+   * Описание теста
+   */
+  description?: string | null;
+  /**
+   * Категория теста
+   */
+  category: 'react' | 'nextjs' | 'javascript' | 'typescript' | 'css-html' | 'general' | 'mixed';
+  /**
+   * Уровень сложности
+   */
+  difficulty: 'easy' | 'medium' | 'hard' | 'mixed';
+  /**
+   * Время на прохождение в минутах (0 = без ограничений)
+   */
+  timeLimit?: number | null;
+  /**
+   * Вопросы для теста
+   */
+  questions: (number | Question)[];
+  /**
+   * Активен ли тест
+   */
+  isActive?: boolean | null;
+  /**
+   * Процент для прохождения теста
+   */
+  passingScore?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "test-results".
+ */
+export interface TestResult {
+  id: number;
+  /**
+   * Пользователь, прошедший тест
+   */
+  user: number | User;
+  /**
+   * Пройденный тест
+   */
+  test: number | Test;
+  /**
+   * Ответы пользователя
+   */
+  answers?:
+    | {
+        question: number | Question;
+        selectedOptions?:
+          | {
+              optionIndex: number;
+              id?: string | null;
+            }[]
+          | null;
+        isCorrect?: boolean | null;
+        /**
+         * Время на ответ в секундах
+         */
+        timeSpent?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Процент правильных ответов
+   */
+  score: number;
+  /**
+   * Общее количество вопросов
+   */
+  totalQuestions: number;
+  /**
+   * Количество правильных ответов
+   */
+  correctAnswers: number;
+  /**
+   * Общее время прохождения в секундах
+   */
+  timeSpent?: number | null;
+  /**
+   * Прошел ли пользователь тест
+   */
+  isPassed?: boolean | null;
+  /**
+   * Дата и время завершения теста
+   */
+  completedAt: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -935,6 +1076,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'users';
         value: number | User;
+      } | null)
+    | ({
+        relationTo: 'questions';
+        value: number | Question;
+      } | null)
+    | ({
+        relationTo: 'tests';
+        value: number | Test;
+      } | null)
+    | ({
+        relationTo: 'test-results';
+        value: number | TestResult;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1299,6 +1452,71 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "questions_select".
+ */
+export interface QuestionsSelect<T extends boolean = true> {
+  question?: T;
+  category?: T;
+  difficulty?: T;
+  options?:
+    | T
+    | {
+        text?: T;
+        isCorrect?: T;
+        id?: T;
+      };
+  explanation?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tests_select".
+ */
+export interface TestsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  category?: T;
+  difficulty?: T;
+  timeLimit?: T;
+  questions?: T;
+  isActive?: T;
+  passingScore?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "test-results_select".
+ */
+export interface TestResultsSelect<T extends boolean = true> {
+  user?: T;
+  test?: T;
+  answers?:
+    | T
+    | {
+        question?: T;
+        selectedOptions?:
+          | T
+          | {
+              optionIndex?: T;
+              id?: T;
+            };
+        isCorrect?: T;
+        timeSpent?: T;
+        id?: T;
+      };
+  score?: T;
+  totalQuestions?: T;
+  correctAnswers?: T;
+  timeSpent?: T;
+  isPassed?: T;
+  completedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
