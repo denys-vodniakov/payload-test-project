@@ -12,19 +12,16 @@ export async function POST(request: NextRequest) {
 
     const { name, email, password } = body
 
-    // Валидация
+    // Validation
     if (!name || !email || !password) {
-      return NextResponse.json({ error: 'Все поля обязательны для заполнения' }, { status: 400 })
+      return NextResponse.json({ error: 'All fields are required' }, { status: 400 })
     }
 
     if (password.length < 6) {
-      return NextResponse.json(
-        { error: 'Пароль должен содержать минимум 6 символов' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 })
     }
 
-    // Проверяем, существует ли пользователь
+    // Check if user already exists
     const existingUser = await payload.find({
       collection: 'users',
       where: {
@@ -36,13 +33,10 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingUser.docs.length > 0) {
-      return NextResponse.json(
-        { error: 'Пользователь с таким email уже существует' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 })
     }
 
-    // Создаем нового пользователя
+    // Create new user
     const user = await payload.create({
       collection: 'users',
       data: {
@@ -52,7 +46,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Создаем JWT токен
+    // Create JWT token
     const token = jwt.sign(
       {
         userId: user.id,
@@ -62,16 +56,16 @@ export async function POST(request: NextRequest) {
       { expiresIn: '7d' },
     )
 
-    // Возвращаем данные пользователя без пароля
+    // Return user data without password
     const { password: _, ...userWithoutPassword } = user
 
     return NextResponse.json({
-      message: 'Пользователь успешно зарегистрирован',
+      message: 'User successfully registered',
       user: userWithoutPassword,
       token,
     })
   } catch (error) {
     console.error('Registration error:', error)
-    return NextResponse.json({ error: 'Ошибка при регистрации пользователя' }, { status: 500 })
+    return NextResponse.json({ error: 'Error registering user' }, { status: 500 })
   }
 }

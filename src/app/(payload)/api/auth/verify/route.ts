@@ -10,16 +10,16 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('authorization')
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Токен авторизации не предоставлен' }, { status: 401 })
+      return NextResponse.json({ error: 'Authorization token not provided' }, { status: 401 })
     }
 
-    const token = authHeader.substring(7) // Убираем "Bearer "
+    const token = authHeader.substring(7) // Remove "Bearer " prefix
 
     try {
-      // Проверяем токен
+      // Verify token
       const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string }
 
-      // Получаем актуальные данные пользователя
+      // Get current user data
       const payload = await getPayload({ config: configPromise })
       const user = await payload.findByID({
         collection: 'users',
@@ -27,10 +27,10 @@ export async function GET(request: NextRequest) {
       })
 
       if (!user) {
-        return NextResponse.json({ error: 'Пользователь не найден' }, { status: 404 })
+        return NextResponse.json({ error: 'User not found' }, { status: 404 })
       }
 
-      // Возвращаем данные пользователя без пароля
+      // Return user data without password
       const { password: _, ...userWithoutPassword } = user
 
       return NextResponse.json({
@@ -38,10 +38,10 @@ export async function GET(request: NextRequest) {
         user: userWithoutPassword,
       })
     } catch (jwtError) {
-      return NextResponse.json({ error: 'Недействительный токен' }, { status: 401 })
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
   } catch (error) {
     console.error('Token verification error:', error)
-    return NextResponse.json({ error: 'Ошибка при проверке токена' }, { status: 500 })
+    return NextResponse.json({ error: 'Error verifying token' }, { status: 500 })
   }
 }

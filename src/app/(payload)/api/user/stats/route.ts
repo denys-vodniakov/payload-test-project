@@ -10,10 +10,10 @@ export async function GET(request: NextRequest) {
     const authHeader = request.headers.get('authorization')
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Токен авторизации не предоставлен' }, { status: 401 })
+      return NextResponse.json({ error: 'Authorization token not provided' }, { status: 401 })
     }
 
-    const token = authHeader.substring(7) // Убираем "Bearer "
+    const token = authHeader.substring(7) // Remove "Bearer " prefix
 
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string }
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
             id: result.id,
             test: {
               id: test?.id || 'unknown',
-              title: test?.title || 'Неизвестный тест',
+              title: test?.title || 'Unknown test',
               category: test?.category || 'unknown',
               difficulty: test?.difficulty || 'unknown',
             },
@@ -107,10 +107,10 @@ export async function GET(request: NextRequest) {
         recentResults,
       })
     } catch (jwtError) {
-      return NextResponse.json({ error: 'Недействительный токен' }, { status: 401 })
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
   } catch (error) {
     console.error('Stats fetch error:', error)
-    return NextResponse.json({ error: 'Ошибка при получении статистики' }, { status: 500 })
+    return NextResponse.json({ error: 'Error fetching statistics' }, { status: 500 })
   }
 }

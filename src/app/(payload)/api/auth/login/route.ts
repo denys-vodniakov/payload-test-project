@@ -12,12 +12,12 @@ export async function POST(request: NextRequest) {
 
     const { email, password } = body
 
-    // Валидация
+    // Validation
     if (!email || !password) {
-      return NextResponse.json({ error: 'Email и пароль обязательны' }, { status: 400 })
+      return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
     }
 
-    // Ищем пользователя
+    // Find user
     const users = await payload.find({
       collection: 'users',
       where: {
@@ -29,13 +29,13 @@ export async function POST(request: NextRequest) {
     })
 
     if (users.docs.length === 0) {
-      return NextResponse.json({ error: 'Неверный email или пароль' }, { status: 401 })
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
 
     const user = users.docs[0]
 
-    // Проверяем пароль (Payload автоматически хеширует пароли)
-    // Для простоты используем встроенную аутентификацию Payload
+    // Check password (Payload automatically hashes passwords)
+    // For simplicity, use built-in Payload authentication
     try {
       const loginResult = await payload.login({
         collection: 'users',
@@ -46,10 +46,10 @@ export async function POST(request: NextRequest) {
       })
 
       if (!loginResult.user) {
-        return NextResponse.json({ error: 'Неверный email или пароль' }, { status: 401 })
+        return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
       }
 
-      // Создаем JWT токен
+      // Create JWT token
       const token = jwt.sign(
         {
           userId: loginResult.user.id,
@@ -59,19 +59,19 @@ export async function POST(request: NextRequest) {
         { expiresIn: '7d' },
       )
 
-      // Возвращаем данные пользователя без пароля
+      // Return user data without password
       const { password: _, ...userWithoutPassword } = loginResult.user
 
       return NextResponse.json({
-        message: 'Успешный вход в систему',
+        message: 'Successfully logged in',
         user: userWithoutPassword,
         token,
       })
     } catch (loginError) {
-      return NextResponse.json({ error: 'Неверный email или пароль' }, { status: 401 })
+      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
   } catch (error) {
     console.error('Login error:', error)
-    return NextResponse.json({ error: 'Ошибка при входе в систему' }, { status: 500 })
+    return NextResponse.json({ error: 'Error logging in' }, { status: 500 })
   }
 }
