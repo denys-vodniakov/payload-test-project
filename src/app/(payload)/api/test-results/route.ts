@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     }).filter(Boolean)
     
     const score = Math.round((correctAnswers / questions.docs.length) * 100)
-    const isPassed = score >= test.passingScore
+    const isPassed = score >= (test.passingScore || 70)
     
     // Сохраняем результат
     const result = await payload.create({

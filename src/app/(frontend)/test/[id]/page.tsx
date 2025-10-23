@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -51,29 +51,7 @@ export default function TestPage() {
   const [showResult, setShowResult] = useState(false)
   const [result, setResult] = useState<any>(null)
 
-  useEffect(() => {
-    if (testId) {
-      fetchTest()
-    }
-  }, [testId])
-
-  useEffect(() => {
-    if (test?.timeLimit && timeLeft !== null) {
-      const timer = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev === null || prev <= 0) {
-            handleSubmitTest()
-            return 0
-          }
-          return prev - 1
-        })
-      }, 1000)
-
-      return () => clearInterval(timer)
-    }
-  }, [test?.timeLimit, timeLeft])
-
-  const fetchTest = async () => {
+  const fetchTest = useCallback(async () => {
     try {
       const response = await fetch(`/api/tests/${testId}/questions`)
       const data = await response.json()
@@ -97,7 +75,7 @@ export default function TestPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [testId])
 
   const handleOptionChange = (optionIndex: number) => {
     setSelectedOptions((prev) => {
@@ -135,7 +113,7 @@ export default function TestPage() {
     }
   }
 
-  const handleSubmitTest = async () => {
+  const handleSubmitTest = useCallback(async () => {
     setSubmitting(true)
     try {
       const response = await fetch('/api/test-results', {
@@ -163,13 +141,35 @@ export default function TestPage() {
     } finally {
       setSubmitting(false)
     }
-  }
+  }, [answers, test?.timeLimit, timeLeft, testId])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${mins}:${secs.toString().padStart(2, '0')}`
   }
+
+  useEffect(() => {
+    if (testId) {
+      fetchTest()
+    }
+  }, [testId, fetchTest])
+
+  useEffect(() => {
+    if (test?.timeLimit && timeLeft !== null) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev === null || prev <= 0) {
+            handleSubmitTest()
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+
+      return () => clearInterval(timer)
+    }
+  }, [test?.timeLimit, timeLeft, handleSubmitTest])
 
   if (loading) {
     return (

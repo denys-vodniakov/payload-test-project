@@ -7,9 +7,10 @@ interface GlassCardProps {
   children: ReactNode
   className?: string
   blur?: 'sm' | 'md' | 'lg'
+  style?: React.CSSProperties
 }
 
-export default function GlassCard({ children, className, blur = 'md' }: GlassCardProps) {
+export default function GlassCard({ children, className, blur = 'md', style }: GlassCardProps) {
   const blurClass = {
     sm: 'backdrop-blur-sm',
     md: 'backdrop-blur-md',
@@ -23,6 +24,7 @@ export default function GlassCard({ children, className, blur = 'md' }: GlassCar
         blurClass,
         className,
       )}
+      style={style}
     >
       {children}
     </div>
