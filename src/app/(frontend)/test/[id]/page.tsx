@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Progress } from '@/components/ui/progress'
 import { ArrowLeft, ArrowRight, Clock, CheckCircle, XCircle } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
+import ProtectedRoute from '@/components/ProtectedRoute'
 
 interface Question {
   id: string
@@ -36,6 +38,7 @@ interface Answer {
 }
 
 export default function TestPage() {
+  const { user } = useAuth()
   const params = useParams()
   const router = useRouter()
   const testId = params.id as string
@@ -129,7 +132,7 @@ export default function TestPage() {
             timeSpent: answer.timeSpent,
           })),
           timeSpent: test?.timeLimit ? test.timeLimit * 60 - (timeLeft || 0) : 0,
-          userId: 'current-user', // This should come from auth context
+          userId: user?.id || 'unknown',
         }),
       })
 
@@ -260,89 +263,91 @@ export default function TestPage() {
   const progress = ((currentQuestionIndex + 1) / questions.length) * 100
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">{test.title}</h1>
-              <p className="text-gray-600">
-                Вопрос {currentQuestionIndex + 1} из {questions.length}
-              </p>
-            </div>
-            {timeLeft !== null && (
-              <div className="flex items-center text-lg font-semibold text-blue-600">
-                <Clock className="mr-2 h-5 w-5" />
-                {formatTime(timeLeft)}
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        {/* Header */}
+        <div className="bg-white/80 backdrop-blur-sm border-b sticky top-0 z-10">
+          <div className="max-w-4xl mx-auto px-4 py-4">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800">{test.title}</h1>
+                <p className="text-gray-600">
+                  Вопрос {currentQuestionIndex + 1} из {questions.length}
+                </p>
               </div>
-            )}
+              {timeLeft !== null && (
+                <div className="flex items-center text-lg font-semibold text-blue-600">
+                  <Clock className="mr-2 h-5 w-5" />
+                  {formatTime(timeLeft)}
+                </div>
+              )}
+            </div>
+            <Progress value={progress} className="h-2" />
           </div>
-          <Progress value={progress} className="h-2" />
         </div>
-      </div>
 
-      {/* Question */}
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex items-center gap-2 mb-4">
-              <Badge variant="outline">{test.category}</Badge>
-              <Badge variant="outline">{test.difficulty}</Badge>
-            </div>
-            <CardTitle className="text-xl leading-relaxed">{currentQuestion.question}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {currentQuestion.options.map((option, index) => (
-              <div
-                key={index}
-                className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
-                  selectedOptions.includes(index)
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                }`}
-                onClick={() => handleOptionChange(index)}
-              >
-                <Checkbox
-                  checked={selectedOptions.includes(index)}
-                  onChange={() => handleOptionChange(index)}
-                />
-                <span className="flex-1 text-gray-700">{option.text}</span>
+        {/* Question */}
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <Card className="mb-8">
+            <CardHeader>
+              <div className="flex items-center gap-2 mb-4">
+                <Badge variant="outline">{test.category}</Badge>
+                <Badge variant="outline">{test.difficulty}</Badge>
               </div>
-            ))}
-          </CardContent>
-        </Card>
+              <CardTitle className="text-xl leading-relaxed">{currentQuestion.question}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {currentQuestion.options.map((option, index) => (
+                <div
+                  key={index}
+                  className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                    selectedOptions.includes(index)
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+                  onClick={() => handleOptionChange(index)}
+                >
+                  <Checkbox
+                    checked={selectedOptions.includes(index)}
+                    onChange={() => handleOptionChange(index)}
+                  />
+                  <span className="flex-1 text-gray-700">{option.text}</span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
 
-        {/* Navigation */}
-        <div className="flex justify-between">
-          <Button
-            onClick={handlePreviousQuestion}
-            disabled={currentQuestionIndex === 0}
-            variant="outline"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Предыдущий
-          </Button>
+          {/* Navigation */}
+          <div className="flex justify-between">
+            <Button
+              onClick={handlePreviousQuestion}
+              disabled={currentQuestionIndex === 0}
+              variant="outline"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Предыдущий
+            </Button>
 
-          <Button
-            onClick={handleNextQuestion}
-            disabled={selectedOptions.length === 0}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-          >
-            {currentQuestionIndex === questions.length - 1 ? (
-              <>
-                {submitting ? 'Отправка...' : 'Завершить тест'}
-                <CheckCircle className="ml-2 h-4 w-4" />
-              </>
-            ) : (
-              <>
-                Следующий
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
+            <Button
+              onClick={handleNextQuestion}
+              disabled={selectedOptions.length === 0}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            >
+              {currentQuestionIndex === questions.length - 1 ? (
+                <>
+                  {submitting ? 'Отправка...' : 'Завершить тест'}
+                  <CheckCircle className="ml-2 h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  Следующий
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+    </ProtectedRoute>
   )
 }

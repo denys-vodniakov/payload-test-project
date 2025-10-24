@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowRight, BookOpen, Clock, Trophy, Users, Zap } from 'lucide-react'
+import { ArrowRight, BookOpen, Clock, Trophy, Users, Zap, LogOut, User } from 'lucide-react'
 import Link from 'next/link'
 import AnimatedBackground from '@/components/AnimatedBackground'
 import GlassCard from '@/components/GlassCard'
 import GradientText from '@/components/GradientText'
+import { useAuth } from '@/contexts/AuthContext'
 
 interface Test {
   id: string
@@ -21,6 +22,7 @@ interface Test {
 }
 
 export default function HomePage() {
+  const { user, isAuthenticated, logout } = useAuth()
   const [tests, setTests] = useState<Test[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -96,6 +98,14 @@ export default function HomePage() {
             <GradientText className="text-5xl md:text-7xl font-bold mb-6 animate-gradient">
               Ассесмент Тесты
             </GradientText>
+            {isAuthenticated && user && (
+              <div className="mb-4 p-4 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30">
+                <p className="text-lg text-gray-700">
+                  Добро пожаловать, <span className="font-semibold text-blue-600">{user.name}</span>
+                  ! 👋
+                </p>
+              </div>
+            )}
             <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
               Проверьте свои знания в области веб-разработки с помощью наших интерактивных тестов по
               React, Next.js и современным технологиям
@@ -113,12 +123,44 @@ export default function HomePage() {
                 Начать тестирование
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="px-8 py-4 text-lg">
-              <Link href="/dashboard">
-                <Users className="mr-2 h-5 w-5" />
-                Мой кабинет
-              </Link>
-            </Button>
+            {isAuthenticated ? (
+              <div className="flex items-center gap-4">
+                <Button asChild variant="outline" size="lg" className="px-8 py-4 text-lg">
+                  <Link href="/dashboard">
+                    <User className="mr-2 h-5 w-5" />
+                    Мой кабинет
+                  </Link>
+                </Button>
+                <Button
+                  onClick={logout}
+                  variant="ghost"
+                  size="lg"
+                  className="px-6 py-4 text-lg text-gray-600 hover:text-gray-800"
+                >
+                  <LogOut className="mr-2 h-5 w-5" />
+                  Выйти
+                </Button>
+              </div>
+            ) : (
+              <div className="flex gap-4">
+                <Button asChild variant="outline" size="lg" className="px-8 py-4 text-lg">
+                  <Link href="/login">
+                    <Users className="mr-2 h-5 w-5" />
+                    Войти
+                  </Link>
+                </Button>
+                <Button
+                  asChild
+                  size="lg"
+                  className="px-8 py-4 text-lg bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
+                >
+                  <Link href="/register">
+                    <Users className="mr-2 h-5 w-5" />
+                    Регистрация
+                  </Link>
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Stats */}
