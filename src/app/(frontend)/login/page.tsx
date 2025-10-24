@@ -8,13 +8,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ArrowLeft, Eye, EyeOff, LogIn, Mail, Lock } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff, LogIn, Mail, Lock, Moon, Sun } from 'lucide-react'
 import AnimatedBackground from '@/components/AnimatedBackground'
 import GlassCard from '@/components/GlassCard'
 import GradientText from '@/components/GradientText'
+import { useTheme } from '@/providers/Theme'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { theme, setTheme } = useTheme()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -91,17 +93,27 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90 relative transition-colors duration-300">
       <AnimatedBackground />
 
       {/* Header */}
       <div className="relative z-10 pt-8 px-4">
-        <div className="max-w-md mx-auto">
-          <Button asChild variant="ghost" className="mb-6 text-gray-600 hover:text-gray-800">
+        <div className="max-w-md mx-auto flex justify-between items-center">
+          <Button asChild variant="ghost" className="text-muted-foreground hover:text-foreground">
             <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Назад на главную
+              Back to home
             </Link>
+          </Button>
+
+          {/* Theme Toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
         </div>
       </div>
@@ -110,59 +122,59 @@ export default function LoginPage() {
       <div className="relative z-10 flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <GradientText className="text-4xl font-bold mb-2">Вход в систему</GradientText>
-            <p className="text-gray-600">Войдите в свой аккаунт для продолжения</p>
+            <GradientText className="text-4xl font-bold mb-2">Login</GradientText>
+            <p className="text-muted-foreground">Enter your account to continue</p>
           </div>
 
           <GlassCard className="p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Email Field */}
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="email" className="text-sm font-medium text-foreground">
                   Email
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="Введите ваш email"
+                    placeholder="Enter your email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className={`pl-10 ${errors.email ? 'border-red-500' : ''}`}
+                    className={`pl-10 ${errors.email ? 'border-destructive' : ''}`}
                     disabled={loading}
                   />
                 </div>
-                {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
+                {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
               </div>
 
               {/* Password Field */}
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                  Пароль
+                <Label htmlFor="password" className="text-sm font-medium text-foreground">
+                  Password
                 </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Введите пароль"
+                    placeholder="Enter your password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className={`pl-10 pr-10 ${errors.password ? 'border-red-500' : ''}`}
+                    className={`pl-10 pr-10 ${errors.password ? 'border-destructive' : ''}`}
                     disabled={loading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
+                {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
               </div>
 
               {/* Remember Me & Forgot Password */}
@@ -174,40 +186,40 @@ export default function LoginPage() {
                     onCheckedChange={(checked) => setRememberMe(checked as boolean)}
                     disabled={loading}
                   />
-                  <Label htmlFor="remember" className="text-sm text-gray-600">
-                    Запомнить меня
+                  <Label htmlFor="remember" className="text-sm text-muted-foreground">
+                    Remember me
                   </Label>
                 </div>
                 <Link
                   href="/forgot-password"
-                  className="text-sm text-blue-600 hover:text-blue-800 underline"
+                  className="text-sm text-primary hover:text-primary/80 underline"
                 >
-                  Забыли пароль?
+                  Forgot password?
                 </Link>
               </div>
 
               {/* General Error */}
               {errors.general && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-600">{errors.general}</p>
+                <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                  <p className="text-sm text-destructive">{errors.general}</p>
                 </div>
               )}
 
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3"
+                className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground py-3"
                 disabled={loading}
               >
                 {loading ? (
                   <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Вход...
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
+                    Logging in...
                   </>
                 ) : (
                   <>
                     <LogIn className="mr-2 h-4 w-4" />
-                    Войти
+                    Login
                   </>
                 )}
               </Button>
@@ -215,13 +227,13 @@ export default function LoginPage() {
 
             {/* Register Link */}
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                Нет аккаунта?{' '}
+              <p className="text-sm text-muted-foreground">
+                Don&apos;t have an account?{' '}
                 <Link
                   href="/register"
-                  className="text-blue-600 hover:text-blue-800 font-medium underline"
+                  className="text-primary hover:text-primary/80 font-medium underline"
                 >
-                  Зарегистрироваться
+                  Register
                 </Link>
               </p>
             </div>

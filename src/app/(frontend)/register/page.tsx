@@ -8,13 +8,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
-import { ArrowLeft, Eye, EyeOff, UserPlus, Mail, Lock, User } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff, UserPlus, Mail, Lock, User, Moon, Sun } from 'lucide-react'
 import AnimatedBackground from '@/components/AnimatedBackground'
 import GlassCard from '@/components/GlassCard'
 import GradientText from '@/components/GradientText'
+import { useTheme } from '@/providers/Theme'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { theme, setTheme } = useTheme()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -113,17 +115,27 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90 relative transition-colors duration-300">
       <AnimatedBackground />
 
       {/* Header */}
       <div className="relative z-10 pt-8 px-4">
-        <div className="max-w-md mx-auto">
-          <Button asChild variant="ghost" className="mb-6 text-gray-600 hover:text-gray-800">
+        <div className="max-w-md mx-auto flex justify-between items-center">
+          <Button asChild variant="ghost" className="text-muted-foreground hover:text-foreground">
             <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Назад на главную
+              Back to home
             </Link>
+          </Button>
+
+          {/* Theme Toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
         </div>
       </div>
@@ -132,8 +144,8 @@ export default function RegisterPage() {
       <div className="relative z-10 flex items-center justify-center px-4 py-8">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <GradientText className="text-4xl font-bold mb-2">Регистрация</GradientText>
-            <p className="text-gray-600">Создайте аккаунт для прохождения тестов</p>
+            <GradientText className="text-4xl font-bold mb-2">Registration</GradientText>
+            <p className="text-muted-foreground">Create an account to take tests</p>
           </div>
 
           <GlassCard className="p-8">

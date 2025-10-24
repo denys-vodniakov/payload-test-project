@@ -4,12 +4,24 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowRight, BookOpen, Clock, Trophy, Users, Zap, LogOut, User } from 'lucide-react'
+import {
+  ArrowRight,
+  BookOpen,
+  Clock,
+  Trophy,
+  Users,
+  Zap,
+  LogOut,
+  User,
+  Moon,
+  Sun,
+} from 'lucide-react'
 import Link from 'next/link'
 import AnimatedBackground from '@/components/AnimatedBackground'
 import GlassCard from '@/components/GlassCard'
 import GradientText from '@/components/GradientText'
 import { useAuth } from '@/contexts/AuthContext'
+import { useTheme } from '@/providers/Theme'
 
 interface Test {
   id: string
@@ -23,6 +35,7 @@ interface Test {
 
 export default function HomePage() {
   const { user, isAuthenticated, logout } = useAuth()
+  const { theme, setTheme } = useTheme()
   const [tests, setTests] = useState<Test[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -88,27 +101,39 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 relative">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90 relative transition-colors duration-300">
       <AnimatedBackground />
+
+      {/* Theme Toggle - Fixed Position */}
+      <div className="fixed top-4 right-4 z-50">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="text-muted-foreground hover:text-foreground bg-background/80 backdrop-blur-sm border border-border/50"
+        >
+          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </Button>
+      </div>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 px-4 z-10">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10" />
+        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/5" />
         <div className="relative max-w-7xl mx-auto text-center">
           <div className="mb-8">
             <GradientText className="text-5xl md:text-7xl font-bold mb-6 animate-gradient">
               Ассесмент Тесты
             </GradientText>
             {isAuthenticated && user && (
-              <div className="mb-4 p-4 bg-white/20 backdrop-blur-sm rounded-xl border border-white/30">
-                <p className="text-lg text-gray-700">
-                  Добро пожаловать, <span className="font-semibold text-blue-600">{user.name}</span>
-                  ! 👋
+              <div className="mb-4 p-4 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50">
+                <p className="text-lg text-card-foreground">
+                  Welcome, <span className="font-semibold text-primary">{user.name}</span>! 👋
                 </p>
               </div>
             )}
-            <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Проверьте свои знания в области веб-разработки с помощью наших интерактивных тестов по
-              React, Next.js и современным технологиям
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Test your web development knowledge with our interactive tests on React, Next.js and
+              modern technologies
             </p>
           </div>
 
@@ -116,11 +141,11 @@ export default function HomePage() {
             <Button
               asChild
               size="lg"
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg"
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground px-8 py-4 text-lg"
             >
               <Link href="#tests">
                 <BookOpen className="mr-2 h-5 w-5" />
-                Начать тестирование
+                Start Testing
               </Link>
             </Button>
             {isAuthenticated ? (
@@ -128,17 +153,17 @@ export default function HomePage() {
                 <Button asChild variant="outline" size="lg" className="px-8 py-4 text-lg">
                   <Link href="/dashboard">
                     <User className="mr-2 h-5 w-5" />
-                    Мой кабинет
+                    My Dashboard
                   </Link>
                 </Button>
                 <Button
                   onClick={logout}
                   variant="ghost"
                   size="lg"
-                  className="px-6 py-4 text-lg text-gray-600 hover:text-gray-800"
+                  className="px-6 py-4 text-lg text-muted-foreground hover:text-foreground"
                 >
                   <LogOut className="mr-2 h-5 w-5" />
-                  Выйти
+                  Logout
                 </Button>
               </div>
             ) : (
@@ -146,7 +171,7 @@ export default function HomePage() {
                 <Button asChild variant="outline" size="lg" className="px-8 py-4 text-lg">
                   <Link href="/login">
                     <Users className="mr-2 h-5 w-5" />
-                    Войти
+                    Login
                   </Link>
                 </Button>
                 <Button
@@ -156,7 +181,7 @@ export default function HomePage() {
                 >
                   <Link href="/register">
                     <Users className="mr-2 h-5 w-5" />
-                    Регистрация
+                    Register
                   </Link>
                 </Button>
               </div>
@@ -167,18 +192,18 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <GlassCard className="p-6 shadow-lg animate-float">
               <Trophy className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-gray-800">1000+</h3>
-              <p className="text-gray-600">Вопросов в базе</p>
+              <h3 className="text-2xl font-bold text-foreground">1000+</h3>
+              <p className="text-muted-foreground">Questions in database</p>
             </GlassCard>
             <GlassCard className="p-6 shadow-lg animate-float" style={{ animationDelay: '0.5s' }}>
               <Zap className="h-12 w-12 text-blue-500 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-gray-800">50+</h3>
-              <p className="text-gray-600">Тестов доступно</p>
+              <h3 className="text-2xl font-bold text-foreground">50+</h3>
+              <p className="text-muted-foreground">Tests available</p>
             </GlassCard>
             <GlassCard className="p-6 shadow-lg animate-float" style={{ animationDelay: '1s' }}>
               <Clock className="h-12 w-12 text-green-500 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-gray-800">15 мин</h3>
-              <p className="text-gray-600">Среднее время</p>
+              <h3 className="text-2xl font-bold text-foreground">15 min</h3>
+              <p className="text-muted-foreground">Average time</p>
             </GlassCard>
           </div>
         </div>
@@ -188,9 +213,9 @@ export default function HomePage() {
       <section id="tests" className="py-20 px-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-800 mb-4">Доступные тесты</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Выберите тест по интересующей вас технологии и проверьте свои знания
+            <h2 className="text-4xl font-bold text-foreground mb-4">Available Tests</h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Choose a test for the technology you&apos;re interested in and test your knowledge
             </p>
           </div>
 
@@ -199,12 +224,12 @@ export default function HomePage() {
               {[...Array(6)].map((_, i) => (
                 <Card key={i} className="animate-pulse">
                   <CardHeader>
-                    <div className="h-6 bg-gray-200 rounded w-3/4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-6 bg-muted rounded w-3/4"></div>
+                    <div className="h-4 bg-muted rounded w-1/2"></div>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                    <div className="h-4 bg-muted rounded w-full mb-2"></div>
+                    <div className="h-4 bg-muted rounded w-2/3"></div>
                   </CardContent>
                 </Card>
               ))}
@@ -214,7 +239,7 @@ export default function HomePage() {
               {tests.map((test, index) => (
                 <Card
                   key={test.id}
-                  className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm animate-slide-in-up hover-lift"
+                  className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-card/80 backdrop-blur-sm animate-slide-in-up hover-lift"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <CardHeader>
@@ -224,27 +249,29 @@ export default function HomePage() {
                       </Badge>
                       <Badge variant="outline">{getCategoryLabel(test.category)}</Badge>
                     </div>
-                    <CardTitle className="text-xl group-hover:text-blue-600 transition-colors">
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
                       {test.title}
                     </CardTitle>
-                    <CardDescription className="text-gray-600">{test.description}</CardDescription>
+                    <CardDescription className="text-muted-foreground">
+                      {test.description}
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
                       <span className="flex items-center">
                         <BookOpen className="h-4 w-4 mr-1" />
-                        {test.questions?.length || 0} вопросов
+                        {test.questions?.length || 0} questions
                       </span>
                       {test.timeLimit && (
                         <span className="flex items-center">
                           <Clock className="h-4 w-4 mr-1" />
-                          {test.timeLimit} мин
+                          {test.timeLimit} min
                         </span>
                       )}
                     </div>
-                    <Button asChild className="w-full group-hover:bg-blue-600 transition-colors">
+                    <Button asChild className="w-full group-hover:bg-primary transition-colors">
                       <Link href={`/test/${test.id}`}>
-                        Начать тест
+                        Start Test
                         <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                       </Link>
                     </Button>
