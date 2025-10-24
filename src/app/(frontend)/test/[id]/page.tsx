@@ -56,7 +56,7 @@ export default function TestPage() {
 
   const fetchTest = useCallback(async () => {
     try {
-      const response = await fetch(`/api/tests/${testId}/questions`)
+      const response = await fetch(`/api/(payload)/tests/${testId}/questions`)
       const data = await response.json()
       setTest(data.test)
       setQuestions(data.questions)
@@ -119,7 +119,7 @@ export default function TestPage() {
   const handleSubmitTest = useCallback(async () => {
     setSubmitting(true)
     try {
-      const response = await fetch('/api/test-results', {
+      const response = await fetch('/api/(payload)/test-results', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -74,7 +74,7 @@ export default function DashboardPage() {
       if (!token) return
 
       // Получаем результаты тестов пользователя
-      const response = await fetch('/api/user/stats', {
+      const response = await fetch('/api/(payload)/user/stats', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -387,7 +387,7 @@ export default function DashboardPage() {
                 <Calendar className="mr-2 h-5 w-5" />
                 Recent Results
               </CardTitle>
-              <CardDescription>Ваши недавние попытки прохождения тестов</CardDescription>
+              <CardDescription>Your recent test attempts</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -405,7 +405,7 @@ export default function DashboardPage() {
                         <Badge variant="outline">{getCategoryLabel(result.test.category)}</Badge>
                       </div>
                       <p className="text-sm text-gray-600">
-                        {result.correctAnswers}/{result.totalQuestions} правильных ответов •
+                        {result.correctAnswers}/{result.totalQuestions} correct answers •
                         {formatTime(result.timeSpent)} •{formatDate(result.completedAt)}
                       </p>
                     </div>

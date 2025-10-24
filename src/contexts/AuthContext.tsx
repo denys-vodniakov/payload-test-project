@@ -54,7 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         if (savedToken && savedUser) {
           // Проверяем валидность токена
-          const response = await fetch('/api/auth/verify', {
+          const response = await fetch('/api/(payload)/auth/verify', {
             headers: {
               Authorization: `Bearer ${savedToken}`,
             },
@@ -83,7 +83,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch('/api/(payload)/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,7 +110,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const register = async (name: string, email: string, password: string) => {
     try {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('/api/(payload)/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

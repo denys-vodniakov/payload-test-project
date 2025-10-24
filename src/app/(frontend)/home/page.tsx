@@ -45,7 +45,7 @@ export default function HomePage() {
 
   const fetchTests = async () => {
     try {
-      const response = await fetch('/api/tests')
+      const response = await fetch('/api/(payload)/tests')
       const data = await response.json()
       setTests(data.docs || [])
     } catch (error) {
