@@ -1,6 +1,6 @@
 import type { CollectionBeforeChangeHook } from 'payload'
 
-export const validateTest: CollectionBeforeChangeHook = ({ data, req, operation }) => {
+export const validateTest: CollectionBeforeChangeHook = ({ data, operation }) => {
   // Validate that questions array is not empty
   if (operation === 'create' || operation === 'update') {
     if (!data.questions || data.questions.length === 0) {

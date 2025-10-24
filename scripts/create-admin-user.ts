@@ -1,16 +1,21 @@
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import crypto from 'crypto'
 
 async function createAdminUser() {
   try {
     const payload = await getPayload({ config: configPromise })
+
+    // Generate a secure random password
+    const adminPassword = process.env.ADMIN_PASSWORD || crypto.randomBytes(16).toString('hex')
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@test.com'
 
     // Check if admin user already exists
     const existingUsers = await payload.find({
       collection: 'users',
       where: {
         email: {
-          equals: 'admin@test.com',
+          equals: adminEmail,
         },
       },
     })
@@ -24,16 +29,18 @@ async function createAdminUser() {
     const adminUser = await payload.create({
       collection: 'users',
       data: {
-        email: 'admin@test.com',
-        password: 'admin123',
+        email: adminEmail,
+        password: adminPassword,
         name: 'Admin User',
       },
     })
 
     console.log('Admin user created successfully:', adminUser.email)
     console.log('Login credentials:')
-    console.log('Email: admin@test.com')
-    console.log('Password: admin123')
+    console.log('Email:', adminEmail)
+    console.log('Password:', adminPassword)
+    console.log('\n⚠️  IMPORTANT: Save these credentials securely!')
+    console.log('⚠️  Change the password after first login!')
   } catch (error) {
     console.error('Error creating admin user:', error)
   }

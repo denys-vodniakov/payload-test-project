@@ -1,6 +1,5 @@
 import type { CollectionConfig } from 'payload'
 import { validateTest } from './hooks/validateTest'
-import { debugTestCreation } from './hooks/debugTestCreation'
 
 export const Tests: CollectionConfig = {
   slug: 'tests',
@@ -10,7 +9,7 @@ export const Tests: CollectionConfig = {
   },
   access: {
     read: () => true,
-    create: () => true, // Temporarily allow all users to create tests for debugging
+    create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => Boolean(user),
     delete: ({ req: { user } }) => Boolean(user),
   },
@@ -96,7 +95,7 @@ export const Tests: CollectionConfig = {
     },
   ],
   hooks: {
-    beforeChange: [debugTestCreation, validateTest],
+    beforeChange: [validateTest],
   },
   timestamps: true,
 }

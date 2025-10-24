@@ -9,7 +9,7 @@ export const Questions: CollectionConfig = {
   },
   access: {
     read: () => true,
-    create: () => true, // Temporarily allow all users to create questions for debugging
+    create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => Boolean(user),
     delete: ({ req: { user } }) => Boolean(user),
   },
