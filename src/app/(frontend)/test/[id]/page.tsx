@@ -57,22 +57,35 @@ export default function TestPage() {
   const fetchTest = useCallback(async () => {
     try {
       const response = await fetch(`/api/tests/${testId}/questions`)
-      const data = await response.json()
-      setTest(data.test)
-      setQuestions(data.questions)
 
-      if (data.test.timeLimit) {
-        setTimeLeft(data.test.timeLimit * 60) // Convert minutes to seconds
+      if (!response.ok) {
+        throw new Error(`Failed to fetch test: ${response.status}`)
+      }
+
+      const data = await response.json()
+
+      if (!data.test) {
+        throw new Error('Test data is missing')
+      }
+
+      setTest(data.test)
+      setQuestions(data.questions || [])
+
+      // Set time limit if available (convert minutes to seconds)
+      if (data.test?.timeLimit) {
+        setTimeLeft(data.test.timeLimit * 60)
       }
 
       // Initialize answers array
-      setAnswers(
-        data.questions.map((q: Question) => ({
-          questionId: q.id,
-          selectedOptions: [],
-          timeSpent: 0,
-        })),
-      )
+      if (data.questions && data.questions.length > 0) {
+        setAnswers(
+          data.questions.map((q: Question) => ({
+            questionId: q.id,
+            selectedOptions: [],
+            timeSpent: 0,
+          })),
+        )
+      }
     } catch (error) {
       console.error('Error fetching test:', error)
     } finally {
