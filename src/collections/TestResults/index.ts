@@ -22,7 +22,7 @@ export const TestResults: CollectionConfig = {
       relationTo: 'users',
       required: true,
       admin: {
-        description: 'Пользователь, прошедший тест',
+        description: 'User who passed the test',
       },
     },
     {
@@ -31,7 +31,7 @@ export const TestResults: CollectionConfig = {
       relationTo: 'tests',
       required: true,
       admin: {
-        description: 'Пройденный тест',
+        description: 'Passed test',
       },
     },
     {
@@ -64,12 +64,12 @@ export const TestResults: CollectionConfig = {
           name: 'timeSpent',
           type: 'number',
           admin: {
-            description: 'Время на ответ в секундах',
+            description: 'Time spent on the answer in seconds',
           },
         },
       ],
       admin: {
-        description: 'Ответы пользователя',
+        description: 'Answers of the user',
       },
     },
     {
@@ -77,7 +77,7 @@ export const TestResults: CollectionConfig = {
       type: 'number',
       required: true,
       admin: {
-        description: 'Процент правильных ответов',
+        description: 'Percentage of correct answers',
       },
     },
     {
@@ -85,7 +85,7 @@ export const TestResults: CollectionConfig = {
       type: 'number',
       required: true,
       admin: {
-        description: 'Общее количество вопросов',
+        description: 'Total number of questions',
       },
     },
     {
@@ -93,14 +93,14 @@ export const TestResults: CollectionConfig = {
       type: 'number',
       required: true,
       admin: {
-        description: 'Количество правильных ответов',
+        description: 'Number of correct answers',
       },
     },
     {
       name: 'timeSpent',
       type: 'number',
       admin: {
-        description: 'Общее время прохождения в секундах',
+        description: 'Total time spent on the test in seconds',
       },
     },
     {
@@ -116,7 +116,7 @@ export const TestResults: CollectionConfig = {
       type: 'date',
       required: true,
       admin: {
-        description: 'Дата и время завершения теста',
+        description: 'Date and time of completion of the test',
       },
     },
   ],

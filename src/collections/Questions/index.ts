@@ -18,7 +18,7 @@ export const Questions: CollectionConfig = {
       type: 'text',
       required: true,
       admin: {
-        description: 'Текст вопроса',
+        description: 'Text of the question',
       },
     },
     {
@@ -31,10 +31,10 @@ export const Questions: CollectionConfig = {
         { label: 'JavaScript', value: 'javascript' },
         { label: 'TypeScript', value: 'typescript' },
         { label: 'CSS/HTML', value: 'css-html' },
-        { label: 'Общие вопросы', value: 'general' },
+        { label: 'General questions', value: 'general' },
       ],
       admin: {
-        description: 'Категория вопроса',
+        description: 'Question category',
       },
     },
     {
@@ -42,12 +42,12 @@ export const Questions: CollectionConfig = {
       type: 'select',
       required: true,
       options: [
-        { label: 'Легкий', value: 'easy' },
-        { label: 'Средний', value: 'medium' },
-        { label: 'Сложный', value: 'hard' },
+        { label: 'Easy', value: 'easy' },
+        { label: 'Medium', value: 'medium' },
+        { label: 'Hard', value: 'hard' },
       ],
       admin: {
-        description: 'Уровень сложности',
+        description: 'Difficulty level',
       },
     },
     {
@@ -69,14 +69,14 @@ export const Questions: CollectionConfig = {
         },
       ],
       admin: {
-        description: 'Варианты ответов',
+        description: 'Answer options',
       },
     },
     {
       name: 'explanation',
       type: 'textarea',
       admin: {
-        description: 'Объяснение правильного ответа',
+        description: 'Explanation of the correct answer',
       },
     },
   ],

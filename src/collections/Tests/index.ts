@@ -18,14 +18,14 @@ export const Tests: CollectionConfig = {
       type: 'text',
       required: true,
       admin: {
-        description: 'Название теста',
+        description: 'Test title',
       },
     },
     {
       name: 'description',
       type: 'textarea',
       admin: {
-        description: 'Описание теста',
+        description: 'Test description',
       },
     },
     {
@@ -38,11 +38,11 @@ export const Tests: CollectionConfig = {
         { label: 'JavaScript', value: 'javascript' },
         { label: 'TypeScript', value: 'typescript' },
         { label: 'CSS/HTML', value: 'css-html' },
-        { label: 'Общие вопросы', value: 'general' },
-        { label: 'Смешанный', value: 'mixed' },
+        { label: 'General questions', value: 'general' },
+        { label: 'Mixed', value: 'mixed' },
       ],
       admin: {
-        description: 'Категория теста',
+        description: 'Test category',
       },
     },
     {
@@ -50,20 +50,20 @@ export const Tests: CollectionConfig = {
       type: 'select',
       required: true,
       options: [
-        { label: 'Легкий', value: 'easy' },
-        { label: 'Средний', value: 'medium' },
-        { label: 'Сложный', value: 'hard' },
-        { label: 'Смешанный', value: 'mixed' },
+        { label: 'Easy', value: 'easy' },
+        { label: 'Medium', value: 'medium' },
+        { label: 'Hard', value: 'hard' },
+        { label: 'Mixed', value: 'mixed' },
       ],
       admin: {
-        description: 'Уровень сложности',
+        description: 'Difficulty level',
       },
     },
     {
       name: 'timeLimit',
       type: 'number',
       admin: {
-        description: 'Время на прохождение в минутах (0 = без ограничений)',
+        description: 'Time limit in minutes (0 = no limit)',
       },
     },
     {
@@ -71,9 +71,8 @@ export const Tests: CollectionConfig = {
       type: 'relationship',
       relationTo: 'questions',
       hasMany: true,
-      required: true,
       admin: {
-        description: 'Вопросы для теста',
+        description: 'Questions for the test (required)',
       },
     },
     {
@@ -81,7 +80,7 @@ export const Tests: CollectionConfig = {
       type: 'checkbox',
       defaultValue: true,
       admin: {
-        description: 'Активен ли тест',
+        description: 'Is the test active',
       },
     },
     {
@@ -89,9 +88,34 @@ export const Tests: CollectionConfig = {
       type: 'number',
       defaultValue: 70,
       admin: {
-        description: 'Процент для прохождения теста',
+        description: 'Percentage for passing the test',
       },
     },
   ],
+  hooks: {
+    beforeValidate: [
+      async ({ data, operation }) => {
+        if (operation === 'create' || operation === 'update') {
+          // Handle different data formats for relationship fields
+          const questions = data?.questions
+
+          // Check if questions is empty or undefined
+          if (!questions) {
+            throw new Error('You must add at least one question to the test')
+          }
+
+          // Check if it's an array and has items
+          if (Array.isArray(questions)) {
+            // Filter out null or undefined values
+            const validQuestions = questions.filter((q) => q !== null && q !== undefined)
+            if (validQuestions.length === 0) {
+              throw new Error('You must add at least one question to the test')
+            }
+          }
+        }
+        return data
+      },
+    ],
+  },
   timestamps: true,
 }
