@@ -80,7 +80,7 @@ export default function TestPage() {
       if (data.questions && data.questions.length > 0) {
         setAnswers(
           data.questions.map((q: Question) => ({
-            questionId: q.id,
+            questionId: String(q.id), // Normalize to string for consistency
             selectedOptions: [],
             timeSpent: 0,
           })),
@@ -103,35 +103,73 @@ export default function TestPage() {
     })
   }
 
+  // Save current answer before navigation
+  const saveCurrentAnswer = useCallback(() => {
+    setAnswers((prevAnswers) => {
+      const updatedAnswers = [...prevAnswers]
+      const currentAnswer = updatedAnswers[currentQuestionIndex]
+      updatedAnswers[currentQuestionIndex] = {
+        ...currentAnswer,
+        selectedOptions: [...selectedOptions],
+        timeSpent: currentAnswer.timeSpent + 1,
+      }
+      return updatedAnswers
+    })
+  }, [currentQuestionIndex, selectedOptions])
+
   const handleNextQuestion = () => {
-    // Save current answer
-    const currentAnswer = answers[currentQuestionIndex]
-    const updatedAnswers = [...answers]
-    updatedAnswers[currentQuestionIndex] = {
-      ...currentAnswer,
-      selectedOptions: [...selectedOptions],
-      timeSpent: currentAnswer.timeSpent + 1, // Simple time tracking
-    }
-    setAnswers(updatedAnswers)
+    // Save current answer first
+    saveCurrentAnswer()
 
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1)
-      setSelectedOptions(answers[currentQuestionIndex + 1]?.selectedOptions || [])
+      setCurrentQuestionIndex((prev) => {
+        const nextIndex = prev + 1
+        // Use functional update to get latest answers
+        setAnswers((prevAnswers) => {
+          setSelectedOptions(prevAnswers[nextIndex]?.selectedOptions || [])
+          return prevAnswers
+        })
+        return nextIndex
+      })
     } else {
-      handleSubmitTest()
+      // Last question - submit test with current answer saved
+      setAnswers((prevAnswers) => {
+        const finalAnswers = [...prevAnswers]
+        finalAnswers[currentQuestionIndex] = {
+          ...finalAnswers[currentQuestionIndex],
+          selectedOptions: [...selectedOptions],
+          timeSpent: finalAnswers[currentQuestionIndex].timeSpent + 1,
+        }
+        handleSubmitTest(finalAnswers)
+        return finalAnswers
+      })
     }
   }
 
   const handlePreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((prev) => prev - 1)
-      setSelectedOptions(answers[currentQuestionIndex - 1]?.selectedOptions || [])
+      // Save current answer before going back
+      saveCurrentAnswer()
+      setCurrentQuestionIndex((prev) => {
+        const prevIndex = prev - 1
+        setAnswers((prevAnswers) => {
+          setSelectedOptions(prevAnswers[prevIndex]?.selectedOptions || [])
+          return prevAnswers
+        })
+        return prevIndex
+      })
     }
   }
 
-  const handleSubmitTest = useCallback(async () => {
+  const handleSubmitTest = useCallback(async (answersToSubmit?: Answer[]) => {
     setSubmitting(true)
     try {
+      const answersData = answersToSubmit || answers
+      
+      console.log('Submitting test with answers:', answersData)
+      console.log('Test ID:', testId)
+      console.log('User ID:', user?.id)
+
       const response = await fetch('/api/test-results', {
         method: 'POST',
         headers: {
@@ -139,25 +177,38 @@ export default function TestPage() {
         },
         body: JSON.stringify({
           testId,
-          answers: answers.map((answer, index) => ({
-            questionId: answer.questionId,
-            selectedOptions: answer.selectedOptions,
-            timeSpent: answer.timeSpent,
+          answers: answersData.map((answer) => ({
+            questionId: String(answer.questionId),
+            selectedOptions: answer.selectedOptions || [],
+            timeSpent: answer.timeSpent || 0,
           })),
           timeSpent: test?.timeLimit ? test.timeLimit * 60 - (timeLeft || 0) : 0,
           userId: user?.id || 'unknown',
         }),
       })
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+        console.error('API Error:', errorData)
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+      }
+
       const result = await response.json()
+      console.log('Test result received:', result)
+      
+      if (!result || (result.error && !result.score)) {
+        throw new Error(result.error || 'Invalid response from server')
+      }
+
       setResult(result)
       setShowResult(true)
     } catch (error) {
       console.error('Error submitting test:', error)
+      alert(`Error submitting test: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setSubmitting(false)
     }
-  }, [answers, test?.timeLimit, timeLeft, testId])
+  }, [answers, test?.timeLimit, timeLeft, testId, user?.id])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -172,11 +223,21 @@ export default function TestPage() {
   }, [testId, fetchTest])
 
   useEffect(() => {
-    if (test?.timeLimit && timeLeft !== null) {
+    if (test?.timeLimit && timeLeft !== null && !showResult) {
       const timer = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev === null || prev <= 0) {
-            handleSubmitTest()
+            // Save current answer before submitting
+            setAnswers((prevAnswers) => {
+              const finalAnswers = [...prevAnswers]
+              finalAnswers[currentQuestionIndex] = {
+                ...finalAnswers[currentQuestionIndex],
+                selectedOptions: [...selectedOptions],
+                timeSpent: finalAnswers[currentQuestionIndex].timeSpent + 1,
+              }
+              handleSubmitTest(finalAnswers)
+              return finalAnswers
+            })
             return 0
           }
           return prev - 1
@@ -185,7 +246,7 @@ export default function TestPage() {
 
       return () => clearInterval(timer)
     }
-  }, [test?.timeLimit, timeLeft, handleSubmitTest])
+  }, [test?.timeLimit, timeLeft, handleSubmitTest, showResult, currentQuestionIndex, selectedOptions])
 
   if (loading) {
     return (
@@ -198,7 +259,19 @@ export default function TestPage() {
     )
   }
 
-  if (showResult && result) {
+  if (showResult) {
+    // Show loading if result is being processed
+    if (!result) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-xl text-gray-600">Processing results...</p>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
         <Card className="w-full max-w-2xl">
@@ -228,12 +301,16 @@ export default function TestPage() {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <p className="text-2xl font-bold text-blue-600">{result.score}%</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  {result.score !== undefined ? `${result.score}%` : 'N/A'}
+                </p>
                 <p className="text-sm text-gray-600">Total Score</p>
               </div>
               <div className="text-center p-4 bg-green-50 rounded-lg">
                 <p className="text-2xl font-bold text-green-600">
-                  {result.correctAnswers}/{result.totalQuestions}
+                  {result.correctAnswers !== undefined && result.totalQuestions !== undefined
+                    ? `${result.correctAnswers}/${result.totalQuestions}`
+                    : 'N/A'}
                 </p>
                 <p className="text-sm text-gray-600">Correct Answers</p>
               </div>
