@@ -13,10 +13,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    // Normalize IDs to numbers (Payload requires numeric IDs for relationships)
+    const normalizedTestId = typeof testId === 'string' ? parseInt(testId, 10) : testId
+    const normalizedUserId = typeof userId === 'string' ? parseInt(userId, 10) : userId
+
+    if (isNaN(normalizedTestId) || isNaN(normalizedUserId)) {
+      return NextResponse.json({ error: 'Invalid testId or userId format' }, { status: 400 })
+    }
+
     // Get test and questions
     const test = await payload.findByID({
       collection: 'tests',
-      id: testId,
+      id: normalizedTestId,
     })
 
     // Handle both cases: questions as array of IDs or array of objects with id property
@@ -84,8 +92,16 @@ export async function POST(request: NextRequest) {
 
         if (isCorrect) correctAnswers++
 
+        // Ensure question ID is a number
+        const questionId = typeof question.id === 'string' ? parseInt(question.id, 10) : question.id
+
+        if (isNaN(questionId)) {
+          console.error(`Invalid question ID: ${question.id}`)
+          return null
+        }
+
         return {
-          question: answer.questionId,
+          question: questionId, // Use numeric ID from the found question
           selectedOptions: (answer.selectedOptions || []).map((index: number) => ({
             optionIndex: index,
           })),
@@ -98,20 +114,34 @@ export async function POST(request: NextRequest) {
     const score = Math.round((correctAnswers / questions.docs.length) * 100)
     const isPassed = score >= (test.passingScore || 70)
 
-    // Save result
+    // Save result - ensure all relationship IDs are numbers
+    const dataToSave = {
+      user: normalizedUserId,
+      test: normalizedTestId,
+      answers: processedAnswers,
+      score,
+      totalQuestions: questions.docs.length,
+      correctAnswers,
+      timeSpent,
+      isPassed,
+      completedAt: new Date().toISOString(),
+    }
+
+    console.log('Saving test result with data:', {
+      user: dataToSave.user,
+      test: dataToSave.test,
+      answersCount: dataToSave.answers.length,
+      answers: dataToSave.answers.map((a: any) => ({
+        question: a.question,
+        questionType: typeof a.question,
+        selectedOptions: a.selectedOptions?.length || 0,
+        isCorrect: a.isCorrect,
+      })),
+    })
+
     const result = await payload.create({
       collection: 'test-results',
-      data: {
-        user: userId,
-        test: testId,
-        answers: processedAnswers,
-        score,
-        totalQuestions: questions.docs.length,
-        correctAnswers,
-        timeSpent,
-        isPassed,
-        completedAt: new Date().toISOString(),
-      },
+      data: dataToSave,
     })
 
     const responseData = {
