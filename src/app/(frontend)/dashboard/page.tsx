@@ -179,7 +179,7 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-xl text-gray-600">Загрузка статистики...</p>
+          <p className="text-xl text-gray-600">Loading statistics...</p>
         </div>
       </div>
     )
@@ -190,12 +190,12 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-center text-red-600">Ошибка загрузки</CardTitle>
+            <CardTitle className="text-center text-red-600">Loading Error</CardTitle>
           </CardHeader>
           <CardContent>
             <Button onClick={fetchStats} className="w-full">
               <RefreshCw className="mr-2 h-4 w-4" />
-              Попробовать снова
+              Try Again
             </Button>
           </CardContent>
         </Card>

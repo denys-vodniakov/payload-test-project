@@ -192,7 +192,7 @@ export default function TestPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-xl text-gray-600">Загрузка теста...</p>
+          <p className="text-xl text-gray-600">Loading test...</p>
         </div>
       </div>
     )
@@ -217,35 +217,35 @@ export default function TestPage() {
             <CardTitle
               className={`text-3xl ${result.isPassed ? 'text-green-600' : 'text-red-600'}`}
             >
-              {result.isPassed ? 'Поздравляем!' : 'Попробуйте еще раз'}
+              {result.isPassed ? 'Congratulations!' : 'Try Again'}
             </CardTitle>
             <p className="text-gray-600">
               {result.isPassed
-                ? 'Вы успешно прошли тест!'
-                : 'К сожалению, вы не прошли тест. Попробуйте еще раз!'}
+                ? 'You have successfully passed the test!'
+                : 'Unfortunately, you did not pass the test. Please try again!'}
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-blue-50 rounded-lg">
                 <p className="text-2xl font-bold text-blue-600">{result.score}%</p>
-                <p className="text-sm text-gray-600">Общий балл</p>
+                <p className="text-sm text-gray-600">Total Score</p>
               </div>
               <div className="text-center p-4 bg-green-50 rounded-lg">
                 <p className="text-2xl font-bold text-green-600">
                   {result.correctAnswers}/{result.totalQuestions}
                 </p>
-                <p className="text-sm text-gray-600">Правильных ответов</p>
+                <p className="text-sm text-gray-600">Correct Answers</p>
               </div>
             </div>
 
             <div className="flex gap-4">
               <Button onClick={() => router.push('/')} variant="outline" className="flex-1">
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                На главную
+                Back to Home
               </Button>
               <Button onClick={() => router.push('/dashboard')} className="flex-1">
-                Перейти в кабинет
+                Go to Dashboard
               </Button>
             </div>
           </CardContent>
@@ -259,12 +259,12 @@ export default function TestPage() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-center text-red-600">Тест не найден</CardTitle>
+            <CardTitle className="text-center text-red-600">Test Not Found</CardTitle>
           </CardHeader>
           <CardContent>
             <Button onClick={() => router.push('/')} className="w-full">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Вернуться на главную
+              Back to Home
             </Button>
           </CardContent>
         </Card>
@@ -285,7 +285,7 @@ export default function TestPage() {
               <div>
                 <h1 className="text-2xl font-bold text-gray-800">{test.title}</h1>
                 <p className="text-gray-600">
-                  Вопрос {currentQuestionIndex + 1} из {questions.length}
+                  Question {currentQuestionIndex + 1} of {questions.length}
                 </p>
               </div>
               {timeLeft !== null && (
@@ -338,7 +338,7 @@ export default function TestPage() {
               variant="outline"
             >
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Предыдущий
+              Previous
             </Button>
 
             <Button
@@ -348,12 +348,12 @@ export default function TestPage() {
             >
               {currentQuestionIndex === questions.length - 1 ? (
                 <>
-                  {submitting ? 'Отправка...' : 'Завершить тест'}
+                  {submitting ? 'Submitting...' : 'Finish Test'}
                   <CheckCircle className="ml-2 h-4 w-4" />
                 </>
               ) : (
                 <>
-                  Следующий
+                  Next
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </>
               )}

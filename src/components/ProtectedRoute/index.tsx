@@ -32,7 +32,7 @@ export default function ProtectedRoute({ children, fallback }: ProtectedRoutePro
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-xl text-gray-600">Загрузка...</p>
+          <p className="text-xl text-gray-600">Loading...</p>
         </div>
       </div>
     )
@@ -50,15 +50,15 @@ export default function ProtectedRoute({ children, fallback }: ProtectedRoutePro
         <div className="relative z-10 flex items-center justify-center px-4 py-8">
           <div className="w-full max-w-md">
             <div className="text-center mb-8">
-              <GradientText className="text-4xl font-bold mb-2">Доступ ограничен</GradientText>
+              <GradientText className="text-4xl font-bold mb-2">Access Restricted</GradientText>
               <p className="text-gray-600">
-                Для доступа к этой странице необходимо войти в систему
+                You need to log in to access this page
               </p>
             </div>
 
             <GlassCard className="p-8">
               <CardHeader className="text-center">
-                <CardTitle className="text-xl mb-4">Выберите действие</CardTitle>
+                <CardTitle className="text-xl mb-4">Choose an action</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button
@@ -67,21 +67,21 @@ export default function ProtectedRoute({ children, fallback }: ProtectedRoutePro
                 >
                   <Link href="/login">
                     <LogIn className="mr-2 h-4 w-4" />
-                    Войти в систему
+                    Log In
                   </Link>
                 </Button>
 
                 <Button asChild variant="outline" className="w-full">
                   <Link href="/register">
                     <UserPlus className="mr-2 h-4 w-4" />
-                    Зарегистрироваться
+                    Sign Up
                   </Link>
                 </Button>
 
                 <Button asChild variant="ghost" className="w-full">
                   <Link href="/">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    На главную
+                    Back to Home
                   </Link>
                 </Button>
               </CardContent>
