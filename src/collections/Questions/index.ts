@@ -70,6 +70,7 @@ export const Questions: CollectionConfig = {
     {
       name: 'questionTitle',
       type: 'text',
+      defaultValue: 'Untitled Question',
       admin: {
         description: 'Question title (auto-generated from question text)',
         readOnly: true,
@@ -138,54 +139,48 @@ export const Questions: CollectionConfig = {
             description: 'Is this answer option correct',
           },
         },
-      ],
-      admin: {
-        description: 'Варианты ответов',
-      },
-    },
-    {
-      name: 'answerFeedback',
-      type: 'array',
-      admin: {
-        description: 'Materials for feedback on each answer option (correct/incorrect)',
-      },
-      fields: [
         {
-          name: 'optionIndex',
-          type: 'select',
-          required: true,
+          name: 'feedback',
+          type: 'array',
           admin: {
-            description:
-              'Select answer option index (0-based). Make sure you have created the corresponding option first.',
+            description: 'Feedback materials for this answer option',
           },
-          options: [
-            { label: 'Option 1 (Index 0)', value: '0' },
-            { label: 'Option 2 (Index 1)', value: '1' },
-            { label: 'Option 3 (Index 2)', value: '2' },
-            { label: 'Option 4 (Index 3)', value: '3' },
-            { label: 'Option 5 (Index 4)', value: '4' },
-            { label: 'Option 6 (Index 5)', value: '5' },
+          fields: [
+            {
+              name: 'feedbackType',
+              type: 'select',
+              required: true,
+              defaultValue: 'correct',
+              options: [
+                {
+                  label: 'Feedback for correct answer',
+                  value: 'correct',
+                },
+                {
+                  label: 'Feedback for incorrect answer',
+                  value: 'incorrect',
+                },
+              ],
+              admin: {
+                description: 'Select feedback type - for correct or incorrect answer',
+              },
+            },
+            {
+              name: 'content',
+              type: 'richText',
+              required: true,
+              editor: questionRichTextEditor,
+              admin: {
+                description:
+                  'Feedback content (text, images, video, code, etc.) to show when this option is selected',
+              },
+            },
           ],
         },
-        {
-          name: 'correctAnswerFeedback',
-          type: 'richText',
-          editor: questionRichTextEditor,
-          admin: {
-            description:
-              'Materials for showing when the answer is correct (text, images, video, code, etc.)',
-          },
-        },
-        {
-          name: 'incorrectAnswerFeedback',
-          type: 'richText',
-          editor: questionRichTextEditor,
-          admin: {
-            description:
-              'Materials for showing when the answer is incorrect (text, images, video, code, etc.)',
-          },
-        },
       ],
+      admin: {
+        description: 'Answer options with feedback materials',
+      },
     },
     {
       name: 'explanation',
@@ -197,37 +192,41 @@ export const Questions: CollectionConfig = {
   ],
   hooks: {
     beforeChange: [
-      ({ data, operation }) => {
-        // Auto-generate questionTitle from question richText
-        if (data?.question) {
-          const extractedText = extractTextFromRichText(data.question)
-          if (extractedText) {
-            data.questionTitle = extractedText.substring(0, 100) || 'Untitled Question'
+      ({ data, operation, req }) => {
+        if (!data) {
+          return data
+        }
+
+        try {
+          // Auto-generate questionTitle from question richText
+          if (data.question !== undefined && data.question !== null) {
+            try {
+              const extractedText = extractTextFromRichText(data.question)
+              if (extractedText) {
+                data.questionTitle = extractedText.substring(0, 100) || 'Untitled Question'
+              } else if (!data.questionTitle) {
+                data.questionTitle = 'Untitled Question'
+              }
+            } catch (error) {
+              if (req?.payload?.logger) {
+                req.payload.logger.error('Error extracting text from question:', error)
+              }
+              if (!data.questionTitle) {
+                data.questionTitle = 'Untitled Question'
+              }
+            }
           } else if (!data.questionTitle) {
             data.questionTitle = 'Untitled Question'
           }
-        } else if (!data.questionTitle) {
-          data.questionTitle = 'Untitled Question'
-        }
 
-        // Convert optionIndex from string to number in answerFeedback
-        if (data?.answerFeedback && Array.isArray(data.answerFeedback)) {
-          data.answerFeedback = data.answerFeedback.map((feedback: any) => {
-            if (feedback?.optionIndex !== undefined) {
-              const index =
-                typeof feedback.optionIndex === 'string'
-                  ? parseInt(feedback.optionIndex, 10)
-                  : feedback.optionIndex
-              return {
-                ...feedback,
-                optionIndex: isNaN(index) ? 0 : index,
-              }
-            }
-            return feedback
-          })
+          return data
+        } catch (error) {
+          if (req?.payload?.logger) {
+            req.payload.logger.error('Error in beforeChange hook for Questions:', error)
+          }
+          // Return data as-is if there's a critical error
+          return data
         }
-
-        return data
       },
     ],
   },
