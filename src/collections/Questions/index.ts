@@ -155,29 +155,17 @@ export const Questions: CollectionConfig = {
           type: 'select',
           required: true,
           admin: {
-            description: 'Select answer option index',
+            description:
+              'Select answer option index (0-based). Make sure you have created the corresponding option first.',
           },
-          options: (({ data, siblingData }: { data?: any; siblingData?: any }) => {
-            // Get options from the parent document
-            // In nested array fields, data contains the parent document
-            const parentData = data || siblingData
-            const options = parentData?.options || []
-
-            // Generate options based on existing answer options
-            if (!options || options.length === 0) {
-              return [
-                {
-                  label: 'No options available - add options first',
-                  value: 0,
-                },
-              ]
-            }
-
-            return options.map((_: any, index: number) => ({
-              label: `Option ${index + 1} (Index ${index})`,
-              value: index,
-            }))
-          }) as any,
+          options: [
+            { label: 'Option 1 (Index 0)', value: '0' },
+            { label: 'Option 2 (Index 1)', value: '1' },
+            { label: 'Option 3 (Index 2)', value: '2' },
+            { label: 'Option 4 (Index 3)', value: '3' },
+            { label: 'Option 5 (Index 4)', value: '4' },
+            { label: 'Option 6 (Index 5)', value: '5' },
+          ],
         },
         {
           name: 'correctAnswerFeedback',
@@ -221,6 +209,24 @@ export const Questions: CollectionConfig = {
         } else if (!data.questionTitle) {
           data.questionTitle = 'Untitled Question'
         }
+
+        // Convert optionIndex from string to number in answerFeedback
+        if (data?.answerFeedback && Array.isArray(data.answerFeedback)) {
+          data.answerFeedback = data.answerFeedback.map((feedback: any) => {
+            if (feedback?.optionIndex !== undefined) {
+              const index =
+                typeof feedback.optionIndex === 'string'
+                  ? parseInt(feedback.optionIndex, 10)
+                  : feedback.optionIndex
+              return {
+                ...feedback,
+                optionIndex: isNaN(index) ? 0 : index,
+              }
+            }
+            return feedback
+          })
+        }
+
         return data
       },
     ],
