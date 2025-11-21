@@ -26,11 +26,39 @@ const questionRichTextEditor = lexicalEditor({
   },
 })
 
+// Helper function to extract text from richText
+const extractTextFromRichText = (richText: any): string => {
+  if (!richText || typeof richText !== 'object') return ''
+
+  try {
+    // Lexical editor stores content in root.children array
+    const root = richText.root || richText
+    const children = root.children || []
+
+    // Extract text from paragraph nodes
+    const textParts: string[] = []
+    const extractText = (node: any) => {
+      if (node.text) {
+        textParts.push(node.text)
+      }
+      if (node.children) {
+        node.children.forEach(extractText)
+      }
+    }
+
+    children.forEach(extractText)
+    const text = textParts.join(' ').trim()
+    return text || ''
+  } catch (error) {
+    return ''
+  }
+}
+
 export const Questions: CollectionConfig = {
   slug: 'questions',
   admin: {
-    useAsTitle: 'question',
-    defaultColumns: ['question', 'category', 'difficulty'],
+    useAsTitle: 'questionTitle',
+    defaultColumns: ['questionTitle', 'category', 'difficulty'],
   },
   access: {
     read: () => true,
@@ -39,6 +67,15 @@ export const Questions: CollectionConfig = {
     delete: ({ req: { user } }) => Boolean(user),
   },
   fields: [
+    {
+      name: 'questionTitle',
+      type: 'text',
+      admin: {
+        description: 'Question title (auto-generated from question text)',
+        readOnly: true,
+        hidden: true,
+      },
+    },
     {
       name: 'question',
       type: 'richText',
@@ -115,18 +152,40 @@ export const Questions: CollectionConfig = {
       fields: [
         {
           name: 'optionIndex',
-          type: 'number',
+          type: 'select',
           required: true,
           admin: {
-            description: 'Answer option index (starts from 0)',
+            description: 'Select answer option index',
           },
+          options: (({ data, siblingData }: { data?: any; siblingData?: any }) => {
+            // Get options from the parent document
+            // In nested array fields, data contains the parent document
+            const parentData = data || siblingData
+            const options = parentData?.options || []
+
+            // Generate options based on existing answer options
+            if (!options || options.length === 0) {
+              return [
+                {
+                  label: 'No options available - add options first',
+                  value: 0,
+                },
+              ]
+            }
+
+            return options.map((_: any, index: number) => ({
+              label: `Option ${index + 1} (Index ${index})`,
+              value: index,
+            }))
+          }) as any,
         },
         {
           name: 'correctAnswerFeedback',
           type: 'richText',
           editor: questionRichTextEditor,
           admin: {
-            description: 'Materials for showing when the answer is correct (text, images, video, code, etc.)',
+            description:
+              'Materials for showing when the answer is correct (text, images, video, code, etc.)',
           },
         },
         {
@@ -134,7 +193,8 @@ export const Questions: CollectionConfig = {
           type: 'richText',
           editor: questionRichTextEditor,
           admin: {
-            description: 'Materials for showing when the answer is incorrect (text, images, video, code, etc.)',
+            description:
+              'Materials for showing when the answer is incorrect (text, images, video, code, etc.)',
           },
         },
       ],
@@ -147,5 +207,23 @@ export const Questions: CollectionConfig = {
       },
     },
   ],
+  hooks: {
+    beforeChange: [
+      ({ data, operation }) => {
+        // Auto-generate questionTitle from question richText
+        if (data?.question) {
+          const extractedText = extractTextFromRichText(data.question)
+          if (extractedText) {
+            data.questionTitle = extractedText.substring(0, 100) || 'Untitled Question'
+          } else if (!data.questionTitle) {
+            data.questionTitle = 'Untitled Question'
+          }
+        } else if (!data.questionTitle) {
+          data.questionTitle = 'Untitled Question'
+        }
+        return data
+      },
+    ],
+  },
   timestamps: true,
 }
