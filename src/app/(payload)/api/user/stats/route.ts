@@ -20,18 +20,34 @@ export async function GET(request: NextRequest) {
 
       const payload = await getPayload({ config: configPromise })
 
+      // Normalize userId to number (Payload uses numeric IDs)
+      const normalizedUserId =
+        typeof decoded.userId === 'string' ? parseInt(decoded.userId, 10) : decoded.userId
+
+      if (isNaN(normalizedUserId)) {
+        return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 })
+      }
+
       const testResults = await payload.find({
         collection: 'test-results',
         where: {
           user: {
-            equals: decoded.userId,
+            equals: normalizedUserId,
           },
         },
         limit: 100,
         pagination: false,
+        sort: '-completedAt',
       })
 
-      const testIds = testResults.docs.map((result) => result.test).filter(Boolean)
+      // Extract test IDs and normalize them
+      const testIds = testResults.docs
+        .map((result) => {
+          const testId = result.test
+          return typeof testId === 'number' ? testId : parseInt(String(testId), 10)
+        })
+        .filter((id) => !isNaN(id))
+
       const tests = await payload.find({
         collection: 'tests',
         where: {
@@ -59,7 +75,9 @@ export async function GET(request: NextRequest) {
       const categoryStats: Record<string, { tests: number; totalScore: number }> = {}
 
       testResults.docs.forEach((result) => {
-        const test = testsMap.get(result.test as number)
+        const testId =
+          typeof result.test === 'number' ? result.test : parseInt(String(result.test), 10)
+        const test = testsMap.get(testId)
         if (test && 'category' in test) {
           const category = test.category as string
           if (!categoryStats[category]) {
@@ -77,14 +95,15 @@ export async function GET(request: NextRequest) {
       }))
 
       const recentResults = testResults.docs
-        .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
-        .slice(0, 5)
+        .slice(0, 10) // Already sorted by completedAt desc
         .map((result) => {
-          const test = testsMap.get(result.test as number)
+          const testId =
+            typeof result.test === 'number' ? result.test : parseInt(String(result.test), 10)
+          const test = testsMap.get(testId)
           return {
-            id: result.id,
+            id: String(result.id),
             test: {
-              id: test?.id || 'unknown',
+              id: String(test?.id || testId),
               title: test?.title || 'Unknown test',
               category: test?.category || 'unknown',
               difficulty: test?.difficulty || 'unknown',
@@ -93,7 +112,7 @@ export async function GET(request: NextRequest) {
             correctAnswers: result.correctAnswers,
             totalQuestions: result.totalQuestions,
             timeSpent: result.timeSpent || 0,
-            isPassed: result.isPassed,
+            isPassed: result.isPassed || false,
             completedAt: result.completedAt,
           }
         })

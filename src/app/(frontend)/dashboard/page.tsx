@@ -122,7 +122,7 @@ export default function DashboardPage() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ru-RU', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -145,13 +145,13 @@ export default function DashboardPage() {
   const getDifficultyLabel = (difficulty: string) => {
     switch (difficulty) {
       case 'easy':
-        return 'Легкий'
+        return 'Easy'
       case 'medium':
-        return 'Средний'
+        return 'Medium'
       case 'hard':
-        return 'Сложный'
+        return 'Hard'
       default:
-        return 'Смешанный'
+        return 'Mixed'
     }
   }
 
@@ -168,9 +168,9 @@ export default function DashboardPage() {
       case 'css-html':
         return 'CSS/HTML'
       case 'general':
-        return 'Общие вопросы'
+        return 'General'
       default:
-        return 'Смешанный'
+        return 'Mixed'
     }
   }
 
@@ -311,7 +311,14 @@ export default function DashboardPage() {
                   <Sparkles className="h-5 w-5 text-primary animate-pulse" />
                 </div>
                 <div className="space-y-4">
-                  {stats.categoryStats.map((category, index) => (
+                  {stats.categoryStats.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                      <p>No category statistics yet</p>
+                      <p className="text-sm mt-2">Complete tests to see statistics by category</p>
+                    </div>
+                  ) : (
+                    stats.categoryStats.map((category, index) => (
                     <div
                       key={index}
                       className="animate-slide-in-up"
@@ -327,7 +334,8 @@ export default function DashboardPage() {
                       </div>
                       <Progress value={category.averageScore} className="h-2" />
                     </div>
-                  ))}
+                    ))
+                  )}
                 </div>
               </GlassCard>
             </div>
@@ -387,11 +395,21 @@ export default function DashboardPage() {
                 <Calendar className="mr-2 h-5 w-5" />
                 Recent Results
               </CardTitle>
-              <CardDescription>Ваши недавние попытки прохождения тестов</CardDescription>
+              <CardDescription>Your recent test attempts</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {stats.recentResults.map((result) => (
+                {stats.recentResults.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No test results yet</p>
+                    <p className="text-sm mt-2">Start taking tests to see your results here</p>
+                    <Button asChild className="mt-4">
+                      <Link href="/">Take Your First Test</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  stats.recentResults.map((result) => (
                   <div
                     key={result.id}
                     className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
@@ -405,31 +423,45 @@ export default function DashboardPage() {
                         <Badge variant="outline">{getCategoryLabel(result.test.category)}</Badge>
                       </div>
                       <p className="text-sm text-gray-600">
-                        {result.correctAnswers}/{result.totalQuestions} правильных ответов •
-                        {formatTime(result.timeSpent)} •{formatDate(result.completedAt)}
+                        {result.correctAnswers}/{result.totalQuestions} correct answers •{' '}
+                        {formatTime(result.timeSpent)} • {formatDate(result.completedAt)}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <div
-                        className={`text-2xl font-bold ${
-                          result.isPassed ? 'text-green-600' : 'text-red-600'
-                        }`}
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <div
+                          className={`text-2xl font-bold ${
+                            result.isPassed ? 'text-green-600' : 'text-red-600'
+                          }`}
+                        >
+                          {result.score}%
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {result.isPassed ? (
+                            <Trophy className="h-4 w-4 text-green-600" />
+                          ) : (
+                            <RefreshCw className="h-4 w-4 text-red-600" />
+                          )}
+                          <span className="text-sm text-gray-600">
+                            {result.isPassed ? 'Passed' : 'Failed'}
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        asChild
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2"
                       >
-                        {result.score}%
-                      </div>
-                      <div className="flex items-center gap-1">
-                        {result.isPassed ? (
-                          <Trophy className="h-4 w-4 text-green-600" />
-                        ) : (
-                          <RefreshCw className="h-4 w-4 text-red-600" />
-                        )}
-                        <span className="text-sm text-gray-600">
-                          {result.isPassed ? 'Пройден' : 'Не пройден'}
-                        </span>
-                      </div>
+                        <Link href={`/test/${result.test.id}`}>
+                          <RefreshCw className="h-4 w-4" />
+                          Retake
+                        </Link>
+                      </Button>
                     </div>
                   </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
