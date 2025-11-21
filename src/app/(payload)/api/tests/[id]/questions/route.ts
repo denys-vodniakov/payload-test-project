@@ -47,6 +47,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       },
       limit: 100,
       pagination: false,
+      depth: 2, // Depth for getting all related data (media, code, etc.)
     })
 
     // Shuffle questions

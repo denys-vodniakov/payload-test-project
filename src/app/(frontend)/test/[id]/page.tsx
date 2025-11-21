@@ -10,15 +10,22 @@ import { Progress } from '@/components/ui/progress'
 import { ArrowLeft, ArrowRight, Clock, CheckCircle, XCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import RichText from '@/components/RichText'
+import type { DefaultTypedEditorState } from '@payloadcms/richtext-lexical'
 
 interface Question {
   id: string
-  question: string
+  question: string | DefaultTypedEditorState
   options: Array<{
-    text: string
+    text: string | DefaultTypedEditorState
     isCorrect: boolean
   }>
   explanation?: string
+  answerFeedback?: Array<{
+    optionIndex: number
+    correctAnswerFeedback?: DefaultTypedEditorState | null
+    incorrectAnswerFeedback?: DefaultTypedEditorState | null
+  }>
 }
 
 interface Test {
@@ -384,13 +391,19 @@ export default function TestPage() {
                 <Badge variant="outline">{test.category}</Badge>
                 <Badge variant="outline">{test.difficulty}</Badge>
               </div>
-              <CardTitle className="text-xl leading-relaxed">{currentQuestion.question}</CardTitle>
+              <div className="text-xl leading-relaxed">
+                {typeof currentQuestion.question === 'string' ? (
+                  <CardTitle>{currentQuestion.question}</CardTitle>
+                ) : (
+                  <RichText data={currentQuestion.question} enableGutter={false} />
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {currentQuestion.options.map((option, index) => (
                 <div
                   key={index}
-                  className={`flex items-center space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
+                  className={`flex items-start space-x-3 p-4 rounded-lg border-2 transition-all cursor-pointer ${
                     selectedOptions.includes(index)
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
@@ -400,8 +413,15 @@ export default function TestPage() {
                   <Checkbox
                     checked={selectedOptions.includes(index)}
                     onChange={() => handleOptionChange(index)}
+                    className="mt-1"
                   />
-                  <span className="flex-1 text-gray-700">{option.text}</span>
+                  <div className="flex-1 text-gray-700">
+                    {typeof option.text === 'string' ? (
+                      <span>{option.text}</span>
+                    ) : (
+                      <RichText data={option.text} enableGutter={false} enableProse={false} />
+                    )}
+                  </div>
                 </div>
               ))}
             </CardContent>
