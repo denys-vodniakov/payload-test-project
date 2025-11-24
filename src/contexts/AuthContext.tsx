@@ -4,11 +4,12 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { useRouter } from 'next/navigation'
 
 interface User {
-  id: string
-  name: string
+  id: string | number
+  name?: string | null
   email: string
   createdAt: string
   updatedAt: string
+  role?: ('user' | 'admin') | null
 }
 
 interface AuthContextType {
@@ -53,7 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const savedUser = localStorage.getItem('user')
 
         if (savedToken && savedUser) {
-          // Проверяем валидность токена
+          // Проверяем валидность токена из localStorage
           const response = await fetch('/api/auth/verify', {
             headers: {
               Authorization: `Bearer ${savedToken}`,
@@ -63,10 +64,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
           if (response.ok) {
             setToken(savedToken)
             setUser(JSON.parse(savedUser))
+            setLoading(false)
+            return
           } else {
             // Токен недействителен, очищаем данные
             localStorage.removeItem('authToken')
             localStorage.removeItem('user')
+          }
+        }
+
+        // Если в localStorage нет токена, проверяем куку payload-token
+        // Это нужно для пользователей, авторизованных через админку Payload
+        const cookieResponse = await fetch('/api/auth/me', {
+          credentials: 'include', // Важно: отправляем куки
+        })
+
+        if (cookieResponse.ok) {
+          const data = await cookieResponse.json()
+          if (data.user) {
+            setUser(data.user)
+            // Для куки токена не сохраняем в localStorage, так как это Payload токен
+            // Но устанавливаем флаг, что пользователь авторизован
+            setToken('cookie-auth') // Маркер для авторизации через куки
           }
         }
       } catch (error) {
@@ -135,11 +154,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null)
     setToken(null)
     localStorage.removeItem('authToken')
     localStorage.removeItem('user')
+
+    // Очищаем куку payload-token, если она есть
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      })
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+
     router.push('/')
   }
 

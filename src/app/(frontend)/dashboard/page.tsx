@@ -20,6 +20,10 @@ import {
   Sun,
   Sparkles,
   Zap,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
@@ -28,6 +32,28 @@ import { useTheme } from '@/providers/Theme'
 import AnimatedBackground from '@/components/AnimatedBackground'
 import GlassCard from '@/components/GlassCard'
 import GradientText from '@/components/GradientText'
+import RichText from '@/components/RichText'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+
+interface AnswerFeedback {
+  optionIndex: number
+  feedbackType: 'correct' | 'incorrect'
+  content: any
+}
+
+interface TestAnswer {
+  questionId: number
+  question?: {
+    id: string
+    questionTitle: string
+    question: any
+  }
+  isCorrect: boolean
+  selectedOptions: Array<{ optionIndex: number }>
+  timeSpent: number
+  feedback: AnswerFeedback[] | null
+  explanation: string | null
+}
 
 interface TestResult {
   id: string
@@ -43,6 +69,7 @@ interface TestResult {
   timeSpent: number
   isPassed: boolean
   completedAt: string
+  answers?: TestAnswer[]
 }
 
 interface Stats {
@@ -59,31 +86,60 @@ interface Stats {
 }
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth()
+  const { user, logout, token, loading: authLoading } = useAuth()
   const { theme, setTheme } = useTheme()
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
+  const [expandedResults, setExpandedResults] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    fetchStats()
-  }, [])
+    // Ждем завершения проверки авторизации перед загрузкой статистики
+    if (!authLoading && user) {
+      fetchStats()
+    } else if (!authLoading && !user) {
+      // Если авторизация завершена, но пользователя нет, останавливаем загрузку
+      setLoading(false)
+    }
+  }, [user, authLoading])
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('authToken')
-      if (!token) return
+      // Проверяем токен из localStorage или из AuthContext
+      const localToken = localStorage.getItem('authToken')
+      const authToken = localToken || (token && token !== 'cookie-auth' ? token : null)
+
+      // Подготавливаем заголовки и опции запроса
+      const headers: HeadersInit = {}
+      const options: RequestInit = {
+        credentials: 'include', // Всегда отправляем куки
+      }
+
+      // Если есть токен в localStorage или AuthContext (не cookie-auth), используем его
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`
+      }
+      // Если токена нет, полагаемся на куку payload-token
 
       // Получаем результаты тестов пользователя
       const response = await fetch('/api/user/stats', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        ...options,
+        headers,
       })
 
       if (response.ok) {
         const data = await response.json()
         setStats(data)
       } else {
+        const errorData = await response.json().catch(() => ({}))
+        console.error('Error fetching stats:', response.status, errorData)
+        
+        // Если это ошибка авторизации, не устанавливаем mock данные
+        if (response.status === 401) {
+          console.error('Unauthorized - user may not be authenticated')
+          setStats(null)
+          return
+        }
+        
         // Fallback к mock данным если API недоступен
         const mockStats: Stats = {
           totalTests: 0,
@@ -97,7 +153,7 @@ export default function DashboardPage() {
       }
     } catch (error) {
       console.error('Error fetching stats:', error)
-      // Fallback к mock данным
+      // Fallback к mock данным только если это не ошибка сети/таймаута
       const mockStats: Stats = {
         totalTests: 0,
         passedTests: 0,
@@ -409,58 +465,141 @@ export default function DashboardPage() {
                     </Button>
                   </div>
                 ) : (
-                  stats.recentResults.map((result) => (
-                  <div
-                    key={result.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium">{result.test.title}</h4>
-                        <Badge className={getDifficultyColor(result.test.difficulty)}>
-                          {getDifficultyLabel(result.test.difficulty)}
-                        </Badge>
-                        <Badge variant="outline">{getCategoryLabel(result.test.category)}</Badge>
+                  stats.recentResults.map((result) => {
+                    const isExpanded = expandedResults.has(result.id)
+                    return (
+                    <Collapsible
+                      key={result.id}
+                      open={isExpanded}
+                      onOpenChange={(open) => {
+                        const newSet = new Set(expandedResults)
+                        if (open) {
+                          newSet.add(result.id)
+                        } else {
+                          newSet.delete(result.id)
+                        }
+                        setExpandedResults(newSet)
+                      }}
+                    >
+                      <div className="border rounded-lg">
+                        <CollapsibleTrigger className="w-full">
+                          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-medium">{result.test.title}</h4>
+                                <Badge className={getDifficultyColor(result.test.difficulty)}>
+                                  {getDifficultyLabel(result.test.difficulty)}
+                                </Badge>
+                                <Badge variant="outline">{getCategoryLabel(result.test.category)}</Badge>
+                              </div>
+                              <p className="text-sm text-gray-600">
+                                {result.correctAnswers}/{result.totalQuestions} correct answers •{' '}
+                                {formatTime(result.timeSpent)} • {formatDate(result.completedAt)}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="text-right">
+                                <div
+                                  className={`text-2xl font-bold ${
+                                    result.isPassed ? 'text-green-600' : 'text-red-600'
+                                  }`}
+                                >
+                                  {result.score}%
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  {result.isPassed ? (
+                                    <Trophy className="h-4 w-4 text-green-600" />
+                                  ) : (
+                                    <RefreshCw className="h-4 w-4 text-red-600" />
+                                  )}
+                                  <span className="text-sm text-gray-600">
+                                    {result.isPassed ? 'Passed' : 'Failed'}
+                                  </span>
+                                </div>
+                              </div>
+                              {isExpanded ? (
+                                <ChevronUp className="h-5 w-5 text-gray-400" />
+                              ) : (
+                                <ChevronDown className="h-5 w-5 text-gray-400" />
+                              )}
+                            </div>
+                          </div>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="p-4 pt-0 border-t bg-gray-50">
+                            {result.answers && result.answers.length > 0 ? (
+                              <div className="space-y-4">
+                                <h5 className="font-semibold text-sm mb-3">Answers & Feedback:</h5>
+                                {result.answers.map((answer, idx) => (
+                                  <div
+                                    key={idx}
+                                    className={`p-3 rounded-lg border-2 ${
+                                      answer.isCorrect
+                                        ? 'border-green-200 bg-green-50'
+                                        : 'border-red-200 bg-red-50'
+                                    }`}
+                                  >
+                                    <div className="flex items-start gap-2 mb-2">
+                                      {answer.isCorrect ? (
+                                        <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                                      ) : (
+                                        <XCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                                      )}
+                                      <div className="flex-1">
+                                        <div className="font-medium text-sm mb-1">
+                                          Question {idx + 1}
+                                          {answer.question?.questionTitle && (
+                                            <span className="text-gray-600 ml-2">
+                                              - {answer.question.questionTitle}
+                                            </span>
+                                          )}
+                                        </div>
+                                        {answer.feedback && answer.feedback.length > 0 && (
+                                          <div className="mt-2 space-y-2">
+                                            {answer.feedback.map((fb, fbIdx) => (
+                                              <div
+                                                key={fbIdx}
+                                                className={`p-2 rounded ${
+                                                  fb.feedbackType === 'correct'
+                                                    ? 'bg-green-100'
+                                                    : 'bg-red-100'
+                                                }`}
+                                              >
+                                                <div className="text-xs font-medium mb-1">
+                                                  {fb.feedbackType === 'correct'
+                                                    ? '✓ Correct Answer Feedback'
+                                                    : '✗ Incorrect Answer Feedback'}
+                                                </div>
+                                                <RichText data={fb.content} enableGutter={false} />
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                        {answer.explanation && (
+                                          <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
+                                            <div className="font-medium mb-1">Explanation:</div>
+                                            <p>{answer.explanation}</p>
+                                          </div>
+                                        )}
+                                        {!answer.feedback && !answer.explanation && (
+                                          <div className="text-sm text-gray-500 mt-1">
+                                            No feedback available for this answer
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-500">No answer details available</p>
+                            )}
+                          </div>
+                        </CollapsibleContent>
                       </div>
-                      <p className="text-sm text-gray-600">
-                        {result.correctAnswers}/{result.totalQuestions} correct answers •{' '}
-                        {formatTime(result.timeSpent)} • {formatDate(result.completedAt)}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <div
-                          className={`text-2xl font-bold ${
-                            result.isPassed ? 'text-green-600' : 'text-red-600'
-                          }`}
-                        >
-                          {result.score}%
-                        </div>
-                        <div className="flex items-center gap-1">
-                          {result.isPassed ? (
-                            <Trophy className="h-4 w-4 text-green-600" />
-                          ) : (
-                            <RefreshCw className="h-4 w-4 text-red-600" />
-                          )}
-                          <span className="text-sm text-gray-600">
-                            {result.isPassed ? 'Passed' : 'Failed'}
-                          </span>
-                        </div>
-                      </div>
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center gap-2"
-                      >
-                        <Link href={`/test/${result.test.id}`}>
-                          <RefreshCw className="h-4 w-4" />
-                          Retake
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                  ))
+                    </Collapsible>
+                  )
+                  })
                 )}
               </div>
             </CardContent>

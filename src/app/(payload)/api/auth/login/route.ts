@@ -45,12 +45,12 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      if (!loginResult.user) {
+      if (!loginResult.user || !loginResult.token) {
         return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
       }
 
-      // Create JWT token
-      const token = jwt.sign(
+      // Create JWT token for frontend use (if needed)
+      const customToken = jwt.sign(
         {
           userId: loginResult.user.id,
           email: loginResult.user.email,
@@ -62,11 +62,24 @@ export async function POST(request: NextRequest) {
       // Return user data without password
       const { password: _, ...userWithoutPassword } = loginResult.user
 
-      return NextResponse.json({
+      // Create response with Payload token cookie
+      const response = NextResponse.json({
         message: 'Successfully logged in',
         user: userWithoutPassword,
-        token,
+        token: customToken,
       })
+
+      // Set Payload's authentication cookie
+      // This is required for Payload admin panel to recognize the user
+      response.cookies.set('payload-token', loginResult.token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7, // 7 days
+        path: '/',
+      })
+
+      return response
     } catch (loginError) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }

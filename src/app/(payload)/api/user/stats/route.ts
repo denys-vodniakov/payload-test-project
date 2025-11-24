@@ -7,32 +7,87 @@ const JWT_SECRET = process.env.PAYLOAD_SECRET || 'fallback-secret'
 
 export async function GET(request: NextRequest) {
   try {
+    let userId: number | null = null
     const authHeader = request.headers.get('authorization')
+    const payloadToken = request.cookies.get('payload-token')?.value
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    const payload = await getPayload({ config: configPromise })
+
+    // Проверяем Bearer токен из заголовка
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7) // Remove "Bearer " prefix
+
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string }
+
+        // Normalize userId to number (Payload uses numeric IDs)
+        const normalizedUserId =
+          typeof decoded.userId === 'string' ? parseInt(decoded.userId, 10) : decoded.userId
+
+        if (!isNaN(normalizedUserId)) {
+          userId = normalizedUserId
+        }
+      } catch (jwtError) {
+        // Токен невалиден, пробуем куку
+      }
+    }
+
+    // Если Bearer токен не найден или невалиден, проверяем куку payload-token
+    if (!userId && payloadToken) {
+      try {
+        // Используем Payload API для получения пользователя из куки
+        const origin = request.nextUrl.origin
+        
+        // Используем короткий таймаут для локального запроса
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 2000) // 2 секунды таймаут
+        
+        const meUserReq = await fetch(`${origin}/api/users/me`, {
+          headers: {
+            Authorization: `JWT ${payloadToken}`,
+          },
+          signal: controller.signal,
+          cache: 'no-store',
+        })
+        
+        clearTimeout(timeoutId)
+
+        if (meUserReq.ok) {
+          const { user } = await meUserReq.json()
+          if (user && user.id) {
+            userId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id
+          }
+        }
+      } catch (error: any) {
+        // Если это таймаут, логируем, но не падаем
+        if (error.name === 'AbortError' || error.code === 'UND_ERR_HEADERS_TIMEOUT') {
+          console.error('Timeout when fetching user from cookie:', error)
+        } else {
+          console.error('Error fetching user from cookie:', error)
+        }
+      }
+    }
+
+    if (!userId || isNaN(userId)) {
       return NextResponse.json({ error: 'Authorization token not provided' }, { status: 401 })
     }
 
-    const token = authHeader.substring(7) // Remove "Bearer " prefix
+    // Get user to verify they exist
+    // Note: Admins can access user features, so no additional check needed here
+    const currentUser = await payload.findByID({
+      collection: 'users',
+      id: userId,
+    })
 
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string; email: string }
+    if (!currentUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
 
-      const payload = await getPayload({ config: configPromise })
-
-      // Normalize userId to number (Payload uses numeric IDs)
-      const normalizedUserId =
-        typeof decoded.userId === 'string' ? parseInt(decoded.userId, 10) : decoded.userId
-
-      if (isNaN(normalizedUserId)) {
-        return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 })
-      }
-
-      const testResults = await payload.find({
+    const testResults = await payload.find({
         collection: 'test-results',
         where: {
           user: {
-            equals: normalizedUserId,
+            equals: userId,
           },
         },
         limit: 100,
@@ -94,12 +149,99 @@ export async function GET(request: NextRequest) {
         averageScore: Math.round(data.totalScore / data.tests),
       }))
 
+      // Get all question IDs from all results
+      const allQuestionIds = new Set<number>()
+      testResults.docs.forEach((result) => {
+        if (result.answers && Array.isArray(result.answers)) {
+          result.answers.forEach((answer: any) => {
+            const qId = typeof answer.question === 'number' 
+              ? answer.question 
+              : parseInt(String(answer.question), 10)
+            if (!isNaN(qId)) {
+              allQuestionIds.add(qId)
+            }
+          })
+        }
+      })
+
+      // Fetch all questions with their options and feedback
+      const questions = await payload.find({
+        collection: 'questions',
+        where: {
+          id: {
+            in: Array.from(allQuestionIds),
+          },
+        },
+        limit: 1000,
+        pagination: false,
+      })
+
+      const questionsMap = new Map(questions.docs.map((q) => [q.id, q]))
+
       const recentResults = testResults.docs
         .slice(0, 10) // Already sorted by completedAt desc
         .map((result) => {
           const testId =
             typeof result.test === 'number' ? result.test : parseInt(String(result.test), 10)
           const test = testsMap.get(testId)
+          
+          // Map answers with feedback
+          const answersWithFeedback = (result.answers || []).map((answer: any) => {
+            const questionId = typeof answer.question === 'number' 
+              ? answer.question 
+              : parseInt(String(answer.question), 10)
+            const question = questionsMap.get(questionId)
+            
+            if (!question) {
+              return {
+                questionId,
+                isCorrect: answer.isCorrect || false,
+                selectedOptions: answer.selectedOptions || [],
+                feedback: null,
+              }
+            }
+
+            // Collect feedback from selected options
+            const feedbackItems: Array<{
+              optionIndex: number
+              feedbackType: 'correct' | 'incorrect'
+              content: any
+            }> = []
+
+            if (answer.selectedOptions && Array.isArray(answer.selectedOptions)) {
+              answer.selectedOptions.forEach((selectedOption: any) => {
+                const optionIndex = selectedOption.optionIndex ?? selectedOption
+                const option = question.options?.[optionIndex]
+                
+                if (option && option.feedback && Array.isArray(option.feedback)) {
+                  option.feedback.forEach((fb: any) => {
+                    if (fb.content) {
+                      feedbackItems.push({
+                        optionIndex,
+                        feedbackType: fb.feedbackType || (option.isCorrect ? 'correct' : 'incorrect'),
+                        content: fb.content,
+                      })
+                    }
+                  })
+                }
+              })
+            }
+
+            return {
+              questionId,
+              question: {
+                id: String(question.id),
+                questionTitle: question.questionTitle || 'Question',
+                question: question.question,
+              },
+              isCorrect: answer.isCorrect || false,
+              selectedOptions: answer.selectedOptions || [],
+              timeSpent: answer.timeSpent || 0,
+              feedback: feedbackItems.length > 0 ? feedbackItems : null,
+              explanation: question.explanation || null,
+            }
+          })
+
           return {
             id: String(result.id),
             test: {
@@ -114,6 +256,7 @@ export async function GET(request: NextRequest) {
             timeSpent: result.timeSpent || 0,
             isPassed: result.isPassed || false,
             completedAt: result.completedAt,
+            answers: answersWithFeedback,
           }
         })
 
@@ -125,9 +268,6 @@ export async function GET(request: NextRequest) {
         categoryStats: categoryStatsArray,
         recentResults,
       })
-    } catch (jwtError) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
   } catch (error) {
     console.error('Stats fetch error:', error)
     return NextResponse.json({ error: 'Error fetching statistics' }, { status: 500 })

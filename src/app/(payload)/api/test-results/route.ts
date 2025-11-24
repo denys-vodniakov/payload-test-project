@@ -27,6 +27,14 @@ export async function POST(request: NextRequest) {
       id: normalizedTestId,
     })
 
+    if (!test) {
+      return NextResponse.json({ error: 'Test not found' }, { status: 404 })
+    }
+
+    if (!test.questions || !Array.isArray(test.questions) || test.questions.length === 0) {
+      return NextResponse.json({ error: 'Test has no questions' }, { status: 400 })
+    }
+
     // Handle both cases: questions as array of IDs or array of objects with id property
     const questionIds = test.questions.map((q: any) => (typeof q === 'number' ? q : q.id))
 
@@ -68,6 +76,16 @@ export async function POST(request: NextRequest) {
           return null
         }
 
+        // Check if question has options
+        if (
+          !question.options ||
+          !Array.isArray(question.options) ||
+          question.options.length === 0
+        ) {
+          console.warn(`Question ${question.id} has no options`)
+          return null
+        }
+
         // Get correct option indices
         const correctOptionIndices = question.options
           .map((opt: any, index: number) => (opt.isCorrect ? index : -1))
@@ -79,7 +97,7 @@ export async function POST(request: NextRequest) {
         // 3. Must have at least one selected option (if there are correct options)
         const allSelectedAreCorrect = (answer.selectedOptions || []).every(
           (optionIndex: number) => {
-            const option = question.options[optionIndex]
+            const option = question.options?.[optionIndex]
             return option && option.isCorrect
           },
         )

@@ -66,6 +66,9 @@ export default buildConfig({
     pool: {
       connectionString: process.env.POSTGRES_URL || '',
     },
+    // In development, automatically push schema changes
+    // In production, use migrations instead
+    push: process.env.NODE_ENV === 'development',
   }),
   collections: [Pages, Posts, Media, Categories, Users, Questions, Tests, TestResults],
   cors: [getServerSideURL()].filter(Boolean),

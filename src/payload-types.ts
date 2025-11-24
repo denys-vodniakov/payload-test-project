@@ -389,6 +389,10 @@ export interface Category {
 export interface User {
   id: number;
   name?: string | null;
+  /**
+   * User role - Admin has access to admin panel and user features
+   */
+  role?: ('user' | 'admin') | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -756,27 +760,95 @@ export interface Form {
 export interface Question {
   id: number;
   /**
-   * Текст вопроса
+   * Question title (auto-generated from question text)
    */
-  question: string;
+  questionTitle?: string | null;
   /**
-   * Категория вопроса
+   * Question text with formatting, headings, code, images and video support
+   */
+  question: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Question category
    */
   category: 'react' | 'nextjs' | 'javascript' | 'typescript' | 'css-html' | 'general';
   /**
-   * Уровень сложности
+   * Difficulty level
    */
   difficulty: 'easy' | 'medium' | 'hard';
   /**
-   * Варианты ответов
+   * Answer options with feedback materials
    */
   options: {
-    text: string;
+    /**
+     * Answer text with formatting, headings, code, images and video support
+     */
+    text: {
+      root: {
+        type: string;
+        children: {
+          type: any;
+          version: number;
+          [k: string]: unknown;
+        }[];
+        direction: ('ltr' | 'rtl') | null;
+        format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+        indent: number;
+        version: number;
+      };
+      [k: string]: unknown;
+    };
+    /**
+     * Is this answer option correct
+     */
     isCorrect?: boolean | null;
+    /**
+     * Feedback materials for this answer option
+     */
+    feedback?:
+      | {
+          /**
+           * Select feedback type - for correct or incorrect answer
+           */
+          feedbackType?: ('correct' | 'incorrect') | null;
+          /**
+           * Feedback content (text, images, video, code, etc.) to show when this option is selected
+           */
+          content?: {
+            root: {
+              type: string;
+              children: {
+                type: any;
+                version: number;
+                [k: string]: unknown;
+              }[];
+              direction: ('ltr' | 'rtl') | null;
+              format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+              indent: number;
+              version: number;
+            };
+            [k: string]: unknown;
+          } | null;
+          id?: string | null;
+        }[]
+      | null;
     id?: string | null;
   }[];
   /**
-   * Объяснение правильного ответа
+   * Explanation of the correct answer (deprecated field, use answerFeedback)
    */
   explanation?: string | null;
   updatedAt: string;
@@ -789,35 +861,35 @@ export interface Question {
 export interface Test {
   id: number;
   /**
-   * Название теста
+   * Test title
    */
   title: string;
   /**
-   * Описание теста
+   * Test description
    */
   description?: string | null;
   /**
-   * Категория теста
+   * Test category
    */
   category: 'react' | 'nextjs' | 'javascript' | 'typescript' | 'css-html' | 'general' | 'mixed';
   /**
-   * Уровень сложности
+   * Difficulty level
    */
   difficulty: 'easy' | 'medium' | 'hard' | 'mixed';
   /**
-   * Время на прохождение в минутах (0 = без ограничений)
+   * Time limit in minutes (0 = no limit)
    */
   timeLimit?: number | null;
   /**
-   * Вопросы для теста
+   * Questions for the test (required)
    */
-  questions: (number | Question)[];
+  questions?: (number | Question)[] | null;
   /**
-   * Активен ли тест
+   * Is the test active
    */
   isActive?: boolean | null;
   /**
-   * Процент для прохождения теста
+   * Percentage for passing the test
    */
   passingScore?: number | null;
   updatedAt: string;
@@ -830,15 +902,15 @@ export interface Test {
 export interface TestResult {
   id: number;
   /**
-   * Пользователь, прошедший тест
+   * User who passed the test
    */
   user: number | User;
   /**
-   * Пройденный тест
+   * Passed test
    */
   test: number | Test;
   /**
-   * Ответы пользователя
+   * Answers of the user
    */
   answers?:
     | {
@@ -851,26 +923,26 @@ export interface TestResult {
           | null;
         isCorrect?: boolean | null;
         /**
-         * Время на ответ в секундах
+         * Time spent on the answer in seconds
          */
         timeSpent?: number | null;
         id?: string | null;
       }[]
     | null;
   /**
-   * Процент правильных ответов
+   * Percentage of correct answers
    */
   score: number;
   /**
-   * Общее количество вопросов
+   * Total number of questions
    */
   totalQuestions: number;
   /**
-   * Количество правильных ответов
+   * Number of correct answers
    */
   correctAnswers: number;
   /**
-   * Общее время прохождения в секундах
+   * Total time spent on the test in seconds
    */
   timeSpent?: number | null;
   /**
@@ -878,7 +950,7 @@ export interface TestResult {
    */
   isPassed?: boolean | null;
   /**
-   * Дата и время завершения теста
+   * Date and time of completion of the test
    */
   completedAt: string;
   updatedAt: string;
@@ -1436,6 +1508,7 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1458,6 +1531,7 @@ export interface UsersSelect<T extends boolean = true> {
  * via the `definition` "questions_select".
  */
 export interface QuestionsSelect<T extends boolean = true> {
+  questionTitle?: T;
   question?: T;
   category?: T;
   difficulty?: T;
@@ -1466,6 +1540,13 @@ export interface QuestionsSelect<T extends boolean = true> {
     | {
         text?: T;
         isCorrect?: T;
+        feedback?:
+          | T
+          | {
+              feedbackType?: T;
+              content?: T;
+              id?: T;
+            };
         id?: T;
       };
   explanation?: T;
