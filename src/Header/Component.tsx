@@ -5,7 +5,8 @@ import React from 'react'
 import type { Header } from '@/payload-types'
 
 export async function Header() {
-  const headerData: Header = await getCachedGlobal('header', 1)()
+  // Используем depth=2 для популяции медиа логотипов
+  const headerData: Header = await getCachedGlobal('header', 2)()
 
   return <HeaderClient data={headerData} />
 }

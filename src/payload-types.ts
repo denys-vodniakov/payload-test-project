@@ -1860,6 +1860,20 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
  */
 export interface Header {
   id: number;
+  logo?: {
+    /**
+     * Логотип, который будет отображаться на светлом фоне
+     */
+    light?: (number | null) | Media;
+    /**
+     * Логотип, который будет отображаться на темном фоне
+     */
+    dark?: (number | null) | Media;
+    /**
+     * Опциональный логотип для мобильных устройств. Если не указан, будет использоваться логотип светлой темы
+     */
+    mobile?: (number | null) | Media;
+  };
   navItems?:
     | {
         link: {
@@ -1917,6 +1931,13 @@ export interface Footer {
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
+  logo?:
+    | T
+    | {
+        light?: T;
+        dark?: T;
+        mobile?: T;
+      };
   navItems?:
     | T
     | {
