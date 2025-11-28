@@ -67,13 +67,13 @@ export default function HomePage() {
   const getDifficultyLabel = (difficulty: string) => {
     switch (difficulty) {
       case 'easy':
-        return 'Легкий'
+        return 'Easy'
       case 'medium':
-        return 'Средний'
+        return 'Medium'
       case 'hard':
-        return 'Сложный'
+        return 'Hard'
       default:
-        return 'Смешанный'
+        return 'Mixed'
     }
   }
 

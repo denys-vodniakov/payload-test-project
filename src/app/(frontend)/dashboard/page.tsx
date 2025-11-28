@@ -132,14 +132,14 @@ export default function DashboardPage() {
       } else {
         const errorData = await response.json().catch(() => ({}))
         console.error('Error fetching stats:', response.status, errorData)
-        
+
         // Если это ошибка авторизации, не устанавливаем mock данные
         if (response.status === 401) {
           console.error('Unauthorized - user may not be authenticated')
           setStats(null)
           return
         }
-        
+
         // Fallback к mock данным если API недоступен
         const mockStats: Stats = {
           totalTests: 0,
@@ -188,13 +188,13 @@ export default function DashboardPage() {
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'easy':
-        return 'bg-green-100 text-green-800'
+        return 'bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30'
       case 'medium':
-        return 'bg-yellow-100 text-yellow-800'
+        return 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border border-yellow-500/30'
       case 'hard':
-        return 'bg-red-100 text-red-800'
+        return 'bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30'
       default:
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30'
     }
   }
 
@@ -272,9 +272,14 @@ export default function DashboardPage() {
             variant="ghost"
             size="sm"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="text-muted-foreground hover:text-foreground bg-background/80 backdrop-blur-sm border border-border/50"
+            className="text-muted-foreground hover:text-foreground bg-background/80 backdrop-blur-sm border border-border/50 transition-all duration-300 hover:scale-110"
+            suppressHydrationWarning
           >
-            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4 animate-in spin-in-90 duration-300" />
+            ) : (
+              <Moon className="h-4 w-4 animate-in spin-in-90 duration-300" />
+            )}
           </Button>
         </div>
 
@@ -375,21 +380,21 @@ export default function DashboardPage() {
                     </div>
                   ) : (
                     stats.categoryStats.map((category, index) => (
-                    <div
-                      key={index}
-                      className="animate-slide-in-up"
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium text-foreground">
-                          {getCategoryLabel(category.category)}
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          {category.tests} tests • {category.averageScore}% avg
-                        </span>
+                      <div
+                        key={index}
+                        className="animate-slide-in-up"
+                        style={{ animationDelay: `${index * 0.1}s` }}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="font-medium text-foreground">
+                            {getCategoryLabel(category.category)}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            {category.tests} tests • {category.averageScore}% avg
+                          </span>
+                        </div>
+                        <Progress value={category.averageScore} className="h-2" />
                       </div>
-                      <Progress value={category.averageScore} className="h-2" />
-                    </div>
                     ))
                   )}
                 </div>
@@ -468,137 +473,180 @@ export default function DashboardPage() {
                   stats.recentResults.map((result) => {
                     const isExpanded = expandedResults.has(result.id)
                     return (
-                    <Collapsible
-                      key={result.id}
-                      open={isExpanded}
-                      onOpenChange={(open) => {
-                        const newSet = new Set(expandedResults)
-                        if (open) {
-                          newSet.add(result.id)
-                        } else {
-                          newSet.delete(result.id)
-                        }
-                        setExpandedResults(newSet)
-                      }}
-                    >
-                      <div className="border rounded-lg">
-                        <CollapsibleTrigger className="w-full">
-                          <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h4 className="font-medium">{result.test.title}</h4>
-                                <Badge className={getDifficultyColor(result.test.difficulty)}>
-                                  {getDifficultyLabel(result.test.difficulty)}
-                                </Badge>
-                                <Badge variant="outline">{getCategoryLabel(result.test.category)}</Badge>
-                              </div>
-                              <p className="text-sm text-gray-600">
-                                {result.correctAnswers}/{result.totalQuestions} correct answers •{' '}
-                                {formatTime(result.timeSpent)} • {formatDate(result.completedAt)}
-                              </p>
-                            </div>
-                            <div className="flex items-center gap-4">
-                              <div className="text-right">
-                                <div
-                                  className={`text-2xl font-bold ${
-                                    result.isPassed ? 'text-green-600' : 'text-red-600'
-                                  }`}
-                                >
-                                  {result.score}%
+                      <Collapsible
+                        key={result.id}
+                        open={isExpanded}
+                        onOpenChange={(open) => {
+                          const newSet = new Set(expandedResults)
+                          if (open) {
+                            newSet.add(result.id)
+                          } else {
+                            newSet.delete(result.id)
+                          }
+                          setExpandedResults(newSet)
+                        }}
+                      >
+                        <div className="border border-border rounded-lg overflow-hidden bg-card/50 backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:scale-[1.01]">
+                          <CollapsibleTrigger className="w-full">
+                            <div className="flex items-center justify-between p-4 hover:bg-muted/50 transition-all duration-200 cursor-pointer">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                  <h4 className="font-medium text-foreground">
+                                    {result.test.title}
+                                  </h4>
+                                  <Badge className={getDifficultyColor(result.test.difficulty)}>
+                                    {getDifficultyLabel(result.test.difficulty)}
+                                  </Badge>
+                                  <Badge variant="outline" className="border-border">
+                                    {getCategoryLabel(result.test.category)}
+                                  </Badge>
                                 </div>
-                                <div className="flex items-center gap-1">
-                                  {result.isPassed ? (
-                                    <Trophy className="h-4 w-4 text-green-600" />
-                                  ) : (
-                                    <RefreshCw className="h-4 w-4 text-red-600" />
-                                  )}
-                                  <span className="text-sm text-gray-600">
-                                    {result.isPassed ? 'Passed' : 'Failed'}
-                                  </span>
-                                </div>
+                                <p className="text-sm text-muted-foreground">
+                                  {result.correctAnswers}/{result.totalQuestions} correct answers •{' '}
+                                  {formatTime(result.timeSpent)} • {formatDate(result.completedAt)}
+                                </p>
                               </div>
-                              {isExpanded ? (
-                                <ChevronUp className="h-5 w-5 text-gray-400" />
-                              ) : (
-                                <ChevronDown className="h-5 w-5 text-gray-400" />
-                              )}
-                            </div>
-                          </div>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <div className="p-4 pt-0 border-t bg-gray-50">
-                            {result.answers && result.answers.length > 0 ? (
-                              <div className="space-y-4">
-                                <h5 className="font-semibold text-sm mb-3">Answers & Feedback:</h5>
-                                {result.answers.map((answer, idx) => (
+                              <div className="flex items-center gap-4">
+                                <div className="text-right">
                                   <div
-                                    key={idx}
-                                    className={`p-3 rounded-lg border-2 ${
-                                      answer.isCorrect
-                                        ? 'border-green-200 bg-green-50'
-                                        : 'border-red-200 bg-red-50'
+                                    className={`text-2xl font-bold transition-colors ${
+                                      result.isPassed
+                                        ? 'text-green-600 dark:text-green-400'
+                                        : 'text-red-600 dark:text-red-400'
                                     }`}
                                   >
-                                    <div className="flex items-start gap-2 mb-2">
-                                      {answer.isCorrect ? (
-                                        <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                                      ) : (
-                                        <XCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                                      )}
-                                      <div className="flex-1">
-                                        <div className="font-medium text-sm mb-1">
-                                          Question {idx + 1}
-                                          {answer.question?.questionTitle && (
-                                            <span className="text-gray-600 ml-2">
-                                              - {answer.question.questionTitle}
-                                            </span>
+                                    {result.score}%
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    {result.isPassed ? (
+                                      <Trophy className="h-4 w-4 text-green-600 dark:text-green-400 animate-pulse" />
+                                    ) : (
+                                      <RefreshCw className="h-4 w-4 text-red-600 dark:text-red-400" />
+                                    )}
+                                    <span className="text-sm text-muted-foreground">
+                                      {result.isPassed ? 'Passed' : 'Failed'}
+                                    </span>
+                                  </div>
+                                </div>
+                                <div
+                                  className="transition-transform duration-200"
+                                  style={{
+                                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                                  }}
+                                >
+                                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                                </div>
+                              </div>
+                            </div>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
+                            <div className="p-4 pt-0 border-t border-border bg-muted/30">
+                              {result.answers && result.answers.length > 0 ? (
+                                <div className="space-y-4">
+                                  <h5 className="font-semibold text-sm mb-3">
+                                    Answers & Feedback:
+                                  </h5>
+                                  {result.answers.map((answer, idx) => (
+                                    <div
+                                      key={idx}
+                                      className={`p-4 rounded-lg border-2 transition-all duration-300 hover:shadow-md ${
+                                        answer.isCorrect
+                                          ? 'border-green-500/30 bg-green-500/10 dark:bg-green-500/20'
+                                          : 'border-red-500/30 bg-red-500/10 dark:bg-red-500/20'
+                                      }`}
+                                      style={{ animationDelay: `${idx * 50}ms` }}
+                                    >
+                                      <div className="flex items-start gap-3 mb-3">
+                                        <div
+                                          className={`mt-0.5 flex-shrink-0 ${
+                                            answer.isCorrect
+                                              ? 'text-green-600 dark:text-green-400'
+                                              : 'text-red-600 dark:text-red-400'
+                                          }`}
+                                        >
+                                          {answer.isCorrect ? (
+                                            <CheckCircle2 className="h-5 w-5 animate-in fade-in zoom-in duration-300" />
+                                          ) : (
+                                            <XCircle className="h-5 w-5 animate-in fade-in zoom-in duration-300" />
                                           )}
                                         </div>
-                                        {answer.feedback && answer.feedback.length > 0 && (
-                                          <div className="mt-2 space-y-2">
-                                            {answer.feedback.map((fb, fbIdx) => (
-                                              <div
-                                                key={fbIdx}
-                                                className={`p-2 rounded ${
-                                                  fb.feedbackType === 'correct'
-                                                    ? 'bg-green-100'
-                                                    : 'bg-red-100'
-                                                }`}
-                                              >
-                                                <div className="text-xs font-medium mb-1">
-                                                  {fb.feedbackType === 'correct'
-                                                    ? '✓ Correct Answer Feedback'
-                                                    : '✗ Incorrect Answer Feedback'}
+                                        <div className="flex-1">
+                                          <div className="font-medium text-sm mb-2 text-foreground">
+                                            Question {idx + 1}
+                                            {answer.question?.questionTitle && (
+                                              <span className="text-muted-foreground ml-2">
+                                                - {answer.question.questionTitle}
+                                              </span>
+                                            )}
+                                          </div>
+                                          {answer.feedback && answer.feedback.length > 0 && (
+                                            <div className="mt-3 space-y-3">
+                                              {answer.feedback.map((fb, fbIdx) => (
+                                                <div
+                                                  key={fbIdx}
+                                                  className={`p-3 rounded-lg border transition-all duration-200 animate-in slide-in-from-left fade-in ${
+                                                    fb.feedbackType === 'correct'
+                                                      ? 'bg-green-500/20 dark:bg-green-500/30 border-green-500/30'
+                                                      : 'bg-red-500/20 dark:bg-red-500/30 border-red-500/30'
+                                                  }`}
+                                                  style={{
+                                                    animationDelay: `${idx * 50 + fbIdx * 100}ms`,
+                                                  }}
+                                                >
+                                                  <div
+                                                    className={`text-xs font-semibold mb-2 flex items-center gap-2 ${
+                                                      fb.feedbackType === 'correct'
+                                                        ? 'text-green-700 dark:text-green-300'
+                                                        : 'text-red-700 dark:text-red-300'
+                                                    }`}
+                                                  >
+                                                    <span className="text-base">
+                                                      {fb.feedbackType === 'correct' ? '✓' : '✗'}
+                                                    </span>
+                                                    {fb.feedbackType === 'correct'
+                                                      ? 'Correct Answer Feedback'
+                                                      : 'Incorrect Answer Feedback'}
+                                                  </div>
+                                                  <div className="text-sm text-foreground">
+                                                    <RichText
+                                                      data={fb.content}
+                                                      enableGutter={false}
+                                                    />
+                                                  </div>
                                                 </div>
-                                                <RichText data={fb.content} enableGutter={false} />
+                                              ))}
+                                            </div>
+                                          )}
+                                          {answer.explanation && (
+                                            <div className="mt-3 p-3 bg-blue-500/20 dark:bg-blue-500/30 border border-blue-500/30 rounded-lg text-sm animate-in slide-in-from-left fade-in">
+                                              <div className="font-semibold mb-1 text-blue-700 dark:text-blue-300">
+                                                Explanation:
                                               </div>
-                                            ))}
-                                          </div>
-                                        )}
-                                        {answer.explanation && (
-                                          <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
-                                            <div className="font-medium mb-1">Explanation:</div>
-                                            <p>{answer.explanation}</p>
-                                          </div>
-                                        )}
-                                        {!answer.feedback && !answer.explanation && (
-                                          <div className="text-sm text-gray-500 mt-1">
-                                            No feedback available for this answer
-                                          </div>
-                                        )}
+                                              <p className="text-foreground">
+                                                {answer.explanation}
+                                              </p>
+                                            </div>
+                                          )}
+                                          {!answer.feedback && !answer.explanation && (
+                                            <div className="text-sm text-muted-foreground mt-2 italic">
+                                              No feedback available for this answer
+                                            </div>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <p className="text-sm text-gray-500">No answer details available</p>
-                            )}
-                          </div>
-                        </CollapsibleContent>
-                      </div>
-                    </Collapsible>
-                  )
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-muted-foreground">
+                                  No answer details available
+                                </p>
+                              )}
+                            </div>
+                          </CollapsibleContent>
+                        </div>
+                      </Collapsible>
+                    )
                   })
                 )}
               </div>
