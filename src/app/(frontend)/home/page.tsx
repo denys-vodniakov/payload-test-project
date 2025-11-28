@@ -13,15 +13,12 @@ import {
   Zap,
   LogOut,
   User,
-  Moon,
-  Sun,
 } from 'lucide-react'
 import Link from 'next/link'
 import AnimatedBackground from '@/components/AnimatedBackground'
 import GlassCard from '@/components/GlassCard'
 import GradientText from '@/components/GradientText'
 import { useAuth } from '@/contexts/AuthContext'
-import { useTheme } from '@/providers/Theme'
 
 interface Test {
   id: string
@@ -35,7 +32,6 @@ interface Test {
 
 export default function HomePage() {
   const { user, isAuthenticated, logout } = useAuth()
-  const { theme, setTheme } = useTheme()
   const [tests, setTests] = useState<Test[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -104,25 +100,13 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90 relative transition-colors duration-300">
       <AnimatedBackground />
 
-      {/* Theme Toggle - Fixed Position */}
-      <div className="fixed top-4 right-4 z-50">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="text-muted-foreground hover:text-foreground bg-background/80 backdrop-blur-sm border border-border/50"
-        >
-          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </Button>
-      </div>
-
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 px-4 z-10">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/5" />
         <div className="relative max-w-7xl mx-auto text-center">
           <div className="mb-8">
             <GradientText className="text-5xl md:text-7xl font-bold mb-6 animate-gradient">
-              Ассесмент Тесты
+              Tests for fun
             </GradientText>
             {isAuthenticated && user && (
               <div className="mb-4 p-4 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50">

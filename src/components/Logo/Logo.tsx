@@ -1,7 +1,7 @@
 'use client'
 
 import clsx from 'clsx'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
 import type { Media } from '@/payload-types'
@@ -127,37 +127,42 @@ export const Logo = (props: Props) => {
   // 2. Logo for current theme (dark/light)
   // 3. Light theme logo as fallback
   // Note: We use light theme as default during SSR to avoid hydration mismatch
-  let selectedLogo: number | Media | null | undefined = null
-  let logoAlt = 'Logo'
+  // Use useMemo to recalculate when theme, logo, isMobile, or mounted changes
+  const { selectedLogo, logoAlt } = useMemo(() => {
+    let selected: number | Media | null | undefined = null
+    let alt = 'Logo'
 
-  if (logo) {
-    // During SSR or before mount, always use light theme logo to ensure consistency
-    if (!mounted) {
-      if (logo.light) {
-        selectedLogo = logo.light
-        logoAlt = getLogoAlt(logo.light, 'Logo')
-      } else if (logo.dark) {
-        selectedLogo = logo.dark
-        logoAlt = getLogoAlt(logo.dark, 'Logo')
-      }
-    } else {
-      // After mount, use responsive logic
-      if (isMobile && logo.mobile) {
-        selectedLogo = logo.mobile
-        logoAlt = getLogoAlt(logo.mobile, 'Logo')
-      } else if (theme === 'dark' && logo.dark) {
-        selectedLogo = logo.dark
-        logoAlt = getLogoAlt(logo.dark, 'Logo')
-      } else if (logo.light) {
-        selectedLogo = logo.light
-        logoAlt = getLogoAlt(logo.light, 'Logo')
-      } else if (logo.dark) {
-        // Fallback to dark if light is not set
-        selectedLogo = logo.dark
-        logoAlt = getLogoAlt(logo.dark, 'Logo')
+    if (logo) {
+      // During SSR or before mount, always use light theme logo to ensure consistency
+      if (!mounted) {
+        if (logo.light) {
+          selected = logo.light
+          alt = getLogoAlt(logo.light, 'Logo')
+        } else if (logo.dark) {
+          selected = logo.dark
+          alt = getLogoAlt(logo.dark, 'Logo')
+        }
+      } else {
+        // After mount, use responsive logic
+        if (isMobile && logo.mobile) {
+          selected = logo.mobile
+          alt = getLogoAlt(logo.mobile, 'Logo')
+        } else if (theme === 'dark' && logo.dark) {
+          selected = logo.dark
+          alt = getLogoAlt(logo.dark, 'Logo')
+        } else if (logo.light) {
+          selected = logo.light
+          alt = getLogoAlt(logo.light, 'Logo')
+        } else if (logo.dark) {
+          // Fallback to dark if light is not set
+          selected = logo.dark
+          alt = getLogoAlt(logo.dark, 'Logo')
+        }
       }
     }
-  }
+
+    return { selectedLogo: selected, logoAlt: alt }
+  }, [logo, theme, isMobile, mounted])
 
   const logoUrl = getLogoUrl(selectedLogo)
 
@@ -171,8 +176,6 @@ export const Logo = (props: Props) => {
     /* eslint-disable @next/next/no-img-element */
     <img
       alt={finalAlt}
-      width={193}
-      height={34}
       loading={loading}
       fetchPriority={priority}
       decoding="async"
