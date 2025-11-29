@@ -75,17 +75,26 @@ export const Logo = (props: Props) => {
   // Define mobile device (only after mount to avoid SSR mismatch)
   const isMobile = useMediaQuery('(max-width: 768px)')
 
-  // Define current theme
-  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>('light')
+  // Define current theme - initialize immediately on client
+  // InitTheme script runs beforeInteractive, so data-theme should be set by the time component mounts
+  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>(() => {
+    // Try to get theme immediately if we're on client
+    if (typeof window !== 'undefined') {
+      // InitTheme script should have already set data-theme
+      const dataTheme = document.documentElement.getAttribute('data-theme')
+      if (dataTheme === 'dark' || dataTheme === 'light') {
+        return dataTheme as 'light' | 'dark'
+      }
+      // Use system theme as fallback
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    }
+    return 'light'
+  })
 
   useEffect(() => {
     setMounted(true)
-  }, [])
 
-  useEffect(() => {
-    if (!mounted) return
-
-    // Check theme from data-theme attribute or prefers-color-scheme
+    // Check theme immediately after mount
     const checkTheme = () => {
       const dataTheme = document.documentElement.getAttribute('data-theme')
       if (dataTheme === 'dark') {
@@ -99,7 +108,14 @@ export const Logo = (props: Props) => {
       }
     }
 
+    // Check immediately - InitTheme should have run by now
     checkTheme()
+
+    // Also check after a microtask to ensure InitTheme script has completed
+    Promise.resolve().then(checkTheme)
+
+    // Also check after a short delay to catch any late theme initialization
+    const timeoutId = setTimeout(checkTheme, 10)
 
     // Listen for changes in theme
     const observer = new MutationObserver(checkTheme)
@@ -114,13 +130,14 @@ export const Logo = (props: Props) => {
     mediaQuery.addEventListener('change', handleChange)
 
     return () => {
+      clearTimeout(timeoutId)
       observer.disconnect()
       mediaQuery.removeEventListener('change', handleChange)
     }
-  }, [mounted])
+  }, [])
 
-  // Use passed theme or determine automatically (only after mount)
-  const theme = themeFromProps || (mounted ? currentTheme : 'light')
+  // Use passed theme or determine automatically
+  const theme = themeFromProps || currentTheme
 
   // Select logo in the following order:
   // 1. Mobile logo (if mobile device and it is set)
@@ -154,31 +171,25 @@ export const Logo = (props: Props) => {
         }
       }
 
-      // During SSR or before mount, always use light theme logo to ensure consistency
-      if (!mounted) {
-        if (logo.light) {
-          selected = logo.light
-          alt = getLogoAlt(logo.light, 'Logo')
-        } else if (logo.dark) {
-          selected = logo.dark
-          alt = getLogoAlt(logo.dark, 'Logo')
-        }
-      } else {
-        // After mount, use responsive logic
-        if (isMobile && logo.mobile) {
-          selected = logo.mobile
-          alt = getLogoAlt(logo.mobile, 'Logo')
-        } else if (theme === 'dark' && logo.dark) {
-          selected = logo.dark
-          alt = getLogoAlt(logo.dark, 'Logo')
-        } else if (logo.light) {
-          selected = logo.light
-          alt = getLogoAlt(logo.light, 'Logo')
-        } else if (logo.dark) {
-          // Fallback to dark if light is not set
-          selected = logo.dark
-          alt = getLogoAlt(logo.dark, 'Logo')
-        }
+      // Select logo based on device and theme
+      // Priority: mobile > theme-specific > light > dark
+      if (mounted && isMobile && logo.mobile) {
+        selected = logo.mobile
+        alt = getLogoAlt(logo.mobile, 'Logo')
+      } else if (theme === 'dark' && logo.dark) {
+        selected = logo.dark
+        alt = getLogoAlt(logo.dark, 'Logo')
+      } else if (theme === 'light' && logo.light) {
+        selected = logo.light
+        alt = getLogoAlt(logo.light, 'Logo')
+      } else if (logo.light) {
+        // Fallback to light if theme is not determined yet or theme is light
+        selected = logo.light
+        alt = getLogoAlt(logo.light, 'Logo')
+      } else if (logo.dark) {
+        // Fallback to dark if light is not set
+        selected = logo.dark
+        alt = getLogoAlt(logo.dark, 'Logo')
       }
     }
 
@@ -187,20 +198,32 @@ export const Logo = (props: Props) => {
 
   const logoUrl = getLogoUrl(selectedLogo)
 
-  // Preload all logo variants to avoid broken image on theme switch
+  // Preload all logo variants immediately to avoid broken image
   useEffect(() => {
-    if (mounted && allLogos.length > 0) {
+    if (allLogos.length > 0) {
       allLogos.forEach(({ url }) => {
-        if (url && url !== logoUrl) {
-          const link = document.createElement('link')
-          link.rel = 'preload'
-          link.as = 'image'
-          link.href = url
-          document.head.appendChild(link)
+        if (url) {
+          // Check if link already exists
+          const existingLink = document.querySelector(`link[href="${url}"]`)
+          if (!existingLink) {
+            const link = document.createElement('link')
+            link.rel = 'preload'
+            link.as = 'image'
+            link.href = url
+            document.head.appendChild(link)
+          }
         }
       })
     }
-  }, [mounted, allLogos, logoUrl])
+  }, [allLogos])
+
+  // Force re-render when theme changes to ensure correct logo is selected
+  const [logoKey, setLogoKey] = useState(0)
+  useEffect(() => {
+    if (mounted) {
+      setLogoKey((prev) => prev + 1)
+    }
+  }, [theme, mounted])
 
   // If logo is not set, use default
   const finalUrl =
@@ -208,12 +231,32 @@ export const Logo = (props: Props) => {
     'https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-logo-light.svg'
   const finalAlt = logoUrl ? logoAlt : 'Payload Logo'
 
+  // Debug logging (only in development)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Logo] Selected logo:', {
+        theme,
+        mounted,
+        isMobile,
+        logoUrl: finalUrl,
+        hasLight: !!logo?.light,
+        hasDark: !!logo?.dark,
+        hasMobile: !!logo?.mobile,
+      })
+    }
+  }, [theme, mounted, isMobile, finalUrl, logo])
+
   return (
     <>
       {/* Preload logo images for faster theme switching */}
-      {allLogos.map(({ url }, index) => (
-        <link key={`logo-preload-${index}`} rel="preload" as="image" href={url} />
-      ))}
+      {allLogos.length > 0 && (
+        <>
+          {allLogos.map(({ url }, index) => {
+            // Preload all logo variants
+            return <link key={`logo-preload-${index}`} rel="preload" as="image" href={url} />
+          })}
+        </>
+      )}
       {/* eslint-disable @next/next/no-img-element */}
       <img
         alt={finalAlt}
@@ -223,12 +266,21 @@ export const Logo = (props: Props) => {
         className={clsx('max-w-[9.375rem] w-full h-[34px]', className)}
         src={finalUrl}
         suppressHydrationWarning
+        key={`logo-${theme}-${logoKey}-${logoUrl || 'default'}`}
         onError={(e) => {
           // Fallback to default logo if image fails to load
           const target = e.currentTarget
-          if (target.src !== finalUrl) {
-            target.src =
-              'https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-logo-light.svg'
+          const defaultLogo =
+            'https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-logo-light.svg'
+          if (target.src !== defaultLogo && !target.dataset.fallback) {
+            console.error('[Logo] Failed to load image:', finalUrl, 'Falling back to default')
+            target.dataset.fallback = 'true'
+            target.src = defaultLogo
+          }
+        }}
+        onLoad={() => {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[Logo] Image loaded successfully:', finalUrl)
           }
         }}
       />
