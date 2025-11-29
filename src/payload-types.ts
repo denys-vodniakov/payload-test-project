@@ -1903,6 +1903,24 @@ export interface Header {
  */
 export interface Footer {
   id: number;
+  logo?: {
+    /**
+     * Logo that will be displayed on the light background
+     */
+    light?: (number | null) | Media;
+    /**
+     * Logo that will be displayed on the dark background
+     */
+    dark?: (number | null) | Media;
+    /**
+     * Optional logo for mobile devices. If not specified, the light theme logo will be used
+     */
+    mobile?: (number | null) | Media;
+  };
+  /**
+   * Short description of the company or project that will be displayed under the logo in the footer
+   */
+  description?: string | null;
   navItems?:
     | {
         link: {
@@ -1923,6 +1941,33 @@ export interface Footer {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Social media links that will be displayed in the footer
+   */
+  socialLinks?:
+    | {
+        platform:
+          | 'linkedin'
+          | 'twitter'
+          | 'github'
+          | 'facebook'
+          | 'instagram'
+          | 'youtube'
+          | 'telegram'
+          | 'discord'
+          | 'other';
+        url: string;
+        /**
+         * Optional custom label (if not provided, platform name will be used)
+         */
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Text of the copyright, which will be displayed in the footer
+   */
+  copyright?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1961,6 +2006,14 @@ export interface HeaderSelect<T extends boolean = true> {
  * via the `definition` "footer_select".
  */
 export interface FooterSelect<T extends boolean = true> {
+  logo?:
+    | T
+    | {
+        light?: T;
+        dark?: T;
+        mobile?: T;
+      };
+  description?: T;
   navItems?:
     | T
     | {
@@ -1975,6 +2028,15 @@ export interface FooterSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        label?: T;
+        id?: T;
+      };
+  copyright?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

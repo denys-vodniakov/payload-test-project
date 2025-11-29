@@ -266,23 +266,6 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90 relative transition-colors duration-300">
         <AnimatedBackground />
 
-        {/* Theme Toggle - Fixed Position */}
-        <div className="fixed top-4 right-4 z-50">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-            className="text-muted-foreground hover:text-foreground bg-background/80 backdrop-blur-sm border border-border/50 transition-all duration-300 hover:scale-110"
-            suppressHydrationWarning
-          >
-            {theme === 'dark' ? (
-              <Sun className="h-4 w-4 animate-in spin-in-90 duration-300" />
-            ) : (
-              <Moon className="h-4 w-4 animate-in spin-in-90 duration-300" />
-            )}
-          </Button>
-        </div>
-
         <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
           {/* Header */}
           <div className="mb-8 flex justify-between items-center">

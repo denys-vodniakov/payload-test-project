@@ -56,6 +56,8 @@ const config = {
         'zoom-in': 'zoom-in 0.3s ease-out',
         float: 'float 3s ease-in-out infinite',
         'spin-in-90': 'spin-in-90 0.3s ease-out',
+        shimmer: 'shimmer 2s linear infinite',
+        glow: 'glow 2s ease-in-out infinite alternate',
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -140,6 +142,16 @@ const config = {
         'spin-in-90': {
           from: { transform: 'rotate(-90deg)', opacity: '0' },
           to: { transform: 'rotate(0deg)', opacity: '1' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-1000px 0' },
+          '100%': { backgroundPosition: '1000px 0' },
+        },
+        glow: {
+          '0%': { boxShadow: '0 0 5px rgba(59, 130, 246, 0.2), 0 0 10px rgba(59, 130, 246, 0.2)' },
+          '100%': {
+            boxShadow: '0 0 20px rgba(59, 130, 246, 0.4), 0 0 30px rgba(59, 130, 246, 0.4)',
+          },
         },
       },
       typography: () => ({
