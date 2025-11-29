@@ -21,7 +21,7 @@ interface Props {
 }
 
 /**
- * Get URL of media file - uses relative path to avoid hydration issues
+ * Get URL of media file - works with both local storage and Vercel Blob Storage
  */
 const getLogoUrl = (logo: number | Media | null | undefined): string => {
   if (!logo) return ''
@@ -34,14 +34,14 @@ const getLogoUrl = (logo: number | Media | null | undefined): string => {
   const url = logo.url || null
   if (!url) return ''
 
-  // If URL already has protocol, return as is
+  // If URL already has protocol (Vercel Blob Storage or external), return as is
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url
   }
 
-  // Use relative path to avoid hydration mismatches
-  // The browser will resolve it relative to the current origin
-  return url
+  // For relative URLs, use getMediaUrl to ensure proper base URL
+  // This handles both local development and Vercel production
+  return getMediaUrl(url, logo.updatedAt)
 }
 
 /**
@@ -128,11 +128,32 @@ export const Logo = (props: Props) => {
   // 3. Light theme logo as fallback
   // Note: We use light theme as default during SSR to avoid hydration mismatch
   // Use useMemo to recalculate when theme, logo, isMobile, or mounted changes
-  const { selectedLogo, logoAlt } = useMemo(() => {
+  const { selectedLogo, logoAlt, allLogos } = useMemo(() => {
     let selected: number | Media | null | undefined = null
     let alt = 'Logo'
+    const logos: Array<{ url: string; alt: string }> = []
 
     if (logo) {
+      // Collect all available logos for preloading
+      if (logo.light && typeof logo.light !== 'number') {
+        const url = getLogoUrl(logo.light)
+        if (url) {
+          logos.push({ url, alt: getLogoAlt(logo.light, 'Logo') })
+        }
+      }
+      if (logo.dark && typeof logo.dark !== 'number') {
+        const url = getLogoUrl(logo.dark)
+        if (url) {
+          logos.push({ url, alt: getLogoAlt(logo.dark, 'Logo') })
+        }
+      }
+      if (logo.mobile && typeof logo.mobile !== 'number') {
+        const url = getLogoUrl(logo.mobile)
+        if (url) {
+          logos.push({ url, alt: getLogoAlt(logo.mobile, 'Logo') })
+        }
+      }
+
       // During SSR or before mount, always use light theme logo to ensure consistency
       if (!mounted) {
         if (logo.light) {
@@ -161,10 +182,25 @@ export const Logo = (props: Props) => {
       }
     }
 
-    return { selectedLogo: selected, logoAlt: alt }
+    return { selectedLogo: selected, logoAlt: alt, allLogos: logos }
   }, [logo, theme, isMobile, mounted])
 
   const logoUrl = getLogoUrl(selectedLogo)
+
+  // Preload all logo variants to avoid broken image on theme switch
+  useEffect(() => {
+    if (mounted && allLogos.length > 0) {
+      allLogos.forEach(({ url }) => {
+        if (url && url !== logoUrl) {
+          const link = document.createElement('link')
+          link.rel = 'preload'
+          link.as = 'image'
+          link.href = url
+          document.head.appendChild(link)
+        }
+      })
+    }
+  }, [mounted, allLogos, logoUrl])
 
   // If logo is not set, use default
   const finalUrl =
@@ -173,15 +209,29 @@ export const Logo = (props: Props) => {
   const finalAlt = logoUrl ? logoAlt : 'Payload Logo'
 
   return (
-    /* eslint-disable @next/next/no-img-element */
-    <img
-      alt={finalAlt}
-      loading={loading}
-      fetchPriority={priority}
-      decoding="async"
-      className={clsx('max-w-[9.375rem] w-full h-[34px]', className)}
-      src={finalUrl}
-      suppressHydrationWarning
-    />
+    <>
+      {/* Preload logo images for faster theme switching */}
+      {allLogos.map(({ url }, index) => (
+        <link key={`logo-preload-${index}`} rel="preload" as="image" href={url} />
+      ))}
+      {/* eslint-disable @next/next/no-img-element */}
+      <img
+        alt={finalAlt}
+        loading={loading}
+        fetchPriority={priority}
+        decoding="async"
+        className={clsx('max-w-[9.375rem] w-full h-[34px]', className)}
+        src={finalUrl}
+        suppressHydrationWarning
+        onError={(e) => {
+          // Fallback to default logo if image fails to load
+          const target = e.currentTarget
+          if (target.src !== finalUrl) {
+            target.src =
+              'https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-logo-light.svg'
+          }
+        }}
+      />
+    </>
   )
 }

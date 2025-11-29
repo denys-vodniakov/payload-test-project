@@ -30,7 +30,6 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
         className="text-muted-foreground hover:text-foreground bg-background/80 backdrop-blur-sm border border-border/50"
         suppressHydrationWarning
       >
-        {/* During SSR, show Moon icon. After hydration, show correct icon based on theme */}
         {!mounted || theme !== 'dark' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
       </Button>
     </nav>

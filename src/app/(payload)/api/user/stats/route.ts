@@ -5,6 +5,34 @@ import jwt from 'jsonwebtoken'
 
 const JWT_SECRET = process.env.PAYLOAD_SECRET || 'fallback-secret'
 
+// Helper function to check if richText content is not empty
+const hasRichTextContent = (richText: any): boolean => {
+  if (!richText || typeof richText !== 'object') return false
+
+  try {
+    // Lexical editor stores content in root.children array
+    const root = richText.root || richText
+    const children = root.children || []
+
+    if (!Array.isArray(children) || children.length === 0) return false
+
+    // Check if any child has text content
+    const hasText = (node: any): boolean => {
+      if (node.text && typeof node.text === 'string' && node.text.trim().length > 0) {
+        return true
+      }
+      if (node.children && Array.isArray(node.children)) {
+        return node.children.some(hasText)
+      }
+      return false
+    }
+
+    return children.some(hasText)
+  } catch (error) {
+    return false
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     let userId: number | null = null
@@ -28,19 +56,19 @@ export async function GET(request: NextRequest) {
           userId = normalizedUserId
         }
       } catch (jwtError) {
-        // Токен невалиден, пробуем куку
+        // Invalid token, try cookie
       }
     }
 
-    // Если Bearer токен не найден или невалиден, проверяем куку payload-token
+    // If Bearer token not found or invalid, check payload-token cookie
     if (!userId && payloadToken) {
       try {
-        // Используем Payload API для получения пользователя из куки
+        // Use Payload API to get user from cookie
         const origin = request.nextUrl.origin
 
-        // Используем короткий таймаут для локального запроса
+        // Use short timeout for local request
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 2000) // 2 секунды таймаут
+        const timeoutId = setTimeout(() => controller.abort(), 2000) // 2 с екунды таймаут
 
         const meUserReq = await fetch(`${origin}/api/users/me`, {
           headers: {
@@ -93,7 +121,7 @@ export async function GET(request: NextRequest) {
       limit: 100,
       pagination: false,
       sort: '-completedAt',
-      depth: 1, // Load test relationship data
+      depth: 2, // Load test and question relationship data (depth 2 for nested questions in answers)
     })
 
     // Extract test IDs and normalize them
@@ -156,12 +184,28 @@ export async function GET(request: NextRequest) {
     testResults.docs.forEach((result) => {
       if (result.answers && Array.isArray(result.answers)) {
         result.answers.forEach((answer: any) => {
-          const qId =
-            typeof answer.question === 'number'
-              ? answer.question
-              : parseInt(String(answer.question), 10)
-          if (!isNaN(qId)) {
+          // Handle both cases: question as number or object (from depth)
+          let qId: number | null = null
+          if (typeof answer.question === 'number') {
+            qId = answer.question
+          } else if (typeof answer.question === 'object' && answer.question !== null) {
+            // Question is populated from depth
+            qId =
+              typeof answer.question.id === 'number'
+                ? answer.question.id
+                : parseInt(String(answer.question.id), 10)
+          } else {
+            // Try to parse as string/number
+            qId = parseInt(String(answer.question), 10)
+          }
+
+          if (qId && !isNaN(qId)) {
             allQuestionIds.add(qId)
+          } else {
+            console.warn(`[Stats API] Invalid question ID in answer:`, {
+              question: answer.question,
+              questionType: typeof answer.question,
+            })
           }
         })
       }
@@ -218,13 +262,39 @@ export async function GET(request: NextRequest) {
 
         // Map answers with feedback
         const answersWithFeedback = (result.answers || []).map((answer: any) => {
-          const questionId =
-            typeof answer.question === 'number'
-              ? answer.question
-              : parseInt(String(answer.question), 10)
+          // Handle both cases: question as number or object (from depth)
+          let questionId: number | null = null
+          if (typeof answer.question === 'number') {
+            questionId = answer.question
+          } else if (typeof answer.question === 'object' && answer.question !== null) {
+            // Question is populated from depth
+            questionId =
+              typeof answer.question.id === 'number'
+                ? answer.question.id
+                : parseInt(String(answer.question.id), 10)
+          } else {
+            // Try to parse as string/number
+            questionId = parseInt(String(answer.question), 10)
+          }
+
+          if (!questionId || isNaN(questionId)) {
+            console.warn(`[Stats API] Invalid question ID in answer:`, {
+              question: answer.question,
+              questionType: typeof answer.question,
+              answerKeys: Object.keys(answer),
+            })
+            return {
+              questionId: null,
+              isCorrect: answer.isCorrect || false,
+              selectedOptions: answer.selectedOptions || [],
+              feedback: null,
+            }
+          }
+
           const question = questionsMap.get(questionId)
 
           if (!question) {
+            console.warn(`[Stats API] Question ${questionId} not found in questionsMap`)
             return {
               questionId,
               isCorrect: answer.isCorrect || false,
@@ -232,6 +302,26 @@ export async function GET(request: NextRequest) {
               feedback: null,
             }
           }
+
+          // Debug: log question structure
+          console.log(`[Stats API] Processing question ${questionId}:`, {
+            hasOptions: !!question.options,
+            optionsType: Array.isArray(question.options) ? 'array' : typeof question.options,
+            optionsLength: Array.isArray(question.options) ? question.options.length : 0,
+            firstOptionStructure:
+              question.options && question.options[0]
+                ? {
+                    keys: Object.keys(question.options[0]),
+                    hasFeedback: !!question.options[0].feedback,
+                    feedbackType: Array.isArray(question.options[0].feedback)
+                      ? 'array'
+                      : typeof question.options[0].feedback,
+                    feedbackLength: Array.isArray(question.options[0].feedback)
+                      ? question.options[0].feedback.length
+                      : 0,
+                  }
+                : 'no options',
+          })
 
           // Collect feedback from selected options AND correct options
           const feedbackItems: Array<{
@@ -261,22 +351,66 @@ export async function GET(request: NextRequest) {
               const option = question.options[optionIndex]
 
               if (option && option.feedback && Array.isArray(option.feedback)) {
-                option.feedback.forEach((fb: any) => {
-                  if (fb && fb.content) {
+                console.log(
+                  `[Stats API] Option ${optionIndex} has ${option.feedback.length} feedback items`,
+                )
+                option.feedback.forEach((fb: any, fbIdx: number) => {
+                  console.log(
+                    `[Stats API] Processing feedback ${fbIdx} for option ${optionIndex}:`,
+                    {
+                      hasContent: !!fb?.content,
+                      contentType: fb?.content ? typeof fb?.content : 'missing',
+                      contentKeys:
+                        fb?.content && typeof fb?.content === 'object'
+                          ? Object.keys(fb.content)
+                          : [],
+                      feedbackType: fb?.feedbackType,
+                      hasRichTextContent: fb?.content ? hasRichTextContent(fb.content) : false,
+                    },
+                  )
+
+                  // Check if content exists and is not empty using helper function
+                  const hasContent = fb && fb.content && hasRichTextContent(fb.content)
+
+                  if (hasContent) {
                     feedbackItems.push({
                       optionIndex,
                       feedbackType: fb.feedbackType || (option.isCorrect ? 'correct' : 'incorrect'),
                       content: fb.content,
                     })
+                    console.log(
+                      `[Stats API] ✓ Collected feedback from option ${optionIndex} for question ${questionId}`,
+                      {
+                        feedbackType:
+                          fb.feedbackType || (option.isCorrect ? 'correct' : 'incorrect'),
+                        hasContent: true,
+                      },
+                    )
+                  } else {
+                    console.log(
+                      `[Stats API] Feedback item has no valid content for option ${optionIndex}, question ${questionId}:`,
+                      {
+                        fb: fb ? Object.keys(fb) : 'null',
+                        content: fb?.content
+                          ? typeof fb.content === 'object'
+                            ? Object.keys(fb.content)
+                            : typeof fb.content
+                          : 'missing',
+                      },
+                    )
                   }
                 })
               } else if (option) {
                 // Debug: log when option exists but has no feedback
-                console.log(`Option ${optionIndex} for question ${questionId} has no feedback:`, {
-                  hasFeedback: !!option.feedback,
-                  feedbackType: Array.isArray(option.feedback) ? 'array' : typeof option.feedback,
-                  isCorrect: option.isCorrect,
-                })
+                console.log(
+                  `[Stats API] Option ${optionIndex} for question ${questionId} has no feedback:`,
+                  {
+                    hasFeedback: !!option.feedback,
+                    feedbackType: Array.isArray(option.feedback) ? 'array' : typeof option.feedback,
+                    isCorrect: option.isCorrect,
+                    optionKeys: option ? Object.keys(option) : 'no option',
+                  },
+                )
               }
             })
           }
@@ -295,7 +429,10 @@ export async function GET(request: NextRequest) {
                 Array.isArray(option.feedback)
               ) {
                 option.feedback.forEach((fb: any) => {
-                  if (fb && fb.content) {
+                  // Check if content exists and is not empty using helper function
+                  const hasContent = fb && fb.content && hasRichTextContent(fb.content)
+
+                  if (hasContent) {
                     // Only add feedback marked as 'correct' for correct options
                     const feedbackType = fb.feedbackType || 'correct'
                     if (feedbackType === 'correct') {
@@ -304,7 +441,22 @@ export async function GET(request: NextRequest) {
                         feedbackType: 'correct',
                         content: fb.content,
                       })
+                      console.log(
+                        `[Stats API] ✓ Collected feedback from correct option ${optionIndex} for question ${questionId}`,
+                      )
                     }
+                  } else {
+                    console.log(
+                      `[Stats API] Correct option ${optionIndex} feedback has no valid content:`,
+                      {
+                        fb: fb ? Object.keys(fb) : 'null',
+                        content: fb?.content
+                          ? typeof fb.content === 'object'
+                            ? Object.keys(fb.content)
+                            : typeof fb.content
+                          : 'missing',
+                      },
+                    )
                   }
                 })
               }
@@ -313,7 +465,7 @@ export async function GET(request: NextRequest) {
 
           // Debug logging for feedback collection
           if (feedbackItems.length === 0 && question.options && Array.isArray(question.options)) {
-            console.log(`No feedback collected for question ${questionId}:`, {
+            console.log(`[Stats API] ⚠ No feedback collected for question ${questionId}:`, {
               isCorrect: answer.isCorrect,
               selectedOptionsCount: answer.selectedOptions?.length || 0,
               totalOptions: question.options.length,
@@ -321,7 +473,32 @@ export async function GET(request: NextRequest) {
                 (opt: any) =>
                   opt.feedback && Array.isArray(opt.feedback) && opt.feedback.length > 0,
               ).length,
+              optionsDetails: question.options.map((opt: any, idx: number) => ({
+                index: idx,
+                isCorrect: opt.isCorrect,
+                hasFeedback: !!opt.feedback,
+                feedbackLength: Array.isArray(opt.feedback) ? opt.feedback.length : 0,
+                feedbackContent: Array.isArray(opt.feedback)
+                  ? opt.feedback.map((fb: any) => ({
+                      hasContent: !!(fb && fb.content),
+                      contentType: fb?.content
+                        ? typeof fb.content === 'object'
+                          ? 'object'
+                          : typeof fb.content
+                        : 'missing',
+                      contentKeys:
+                        fb?.content && typeof fb.content === 'object'
+                          ? Object.keys(fb.content)
+                          : [],
+                      feedbackType: fb?.feedbackType,
+                    }))
+                  : [],
+              })),
             })
+          } else if (feedbackItems.length > 0) {
+            console.log(
+              `[Stats API] ✓ Collected ${feedbackItems.length} feedback items for question ${questionId}`,
+            )
           }
 
           return {

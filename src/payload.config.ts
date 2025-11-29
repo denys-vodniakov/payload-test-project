@@ -1,5 +1,5 @@
-// storage-adapter-import-placeholder
 import { vercelPostgresAdapter } from '@payloadcms/db-vercel-postgres'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 
 import sharp from 'sharp' // sharp-import
 import path from 'path'
@@ -75,9 +75,31 @@ export default buildConfig({
   globals: [Header, Footer],
   plugins: [
     ...plugins,
-    // storage-adapter-placeholder
+    // Use Vercel Blob Storage for media files on Vercel (production)
+    // Falls back to local storage in development
+    // Required env vars:
+    // - BLOB_READ_WRITE_TOKEN: Token from Vercel Blob Storage (required)
+    // - BLOB_STORE_ID: Store ID from Vercel Blob Storage (optional, used for URL generation)
+    // - BLOB_BASE_URL: Base URL for all blobs in this store (optional, used for URL generation)
+    ...(process.env.BLOB_READ_WRITE_TOKEN
+      ? [
+          vercelBlobStorage({
+            collections: {
+              [Media.slug]: true,
+            },
+            token: process.env.BLOB_READ_WRITE_TOKEN,
+          }),
+        ]
+      : []),
   ],
-  secret: process.env.PAYLOAD_SECRET,
+  secret:
+    process.env.PAYLOAD_SECRET ||
+    (() => {
+      if (!process.env.PAYLOAD_SECRET) {
+        console.error('⚠️  PAYLOAD_SECRET environment variable is not set')
+      }
+      return ''
+    })(),
   sharp,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

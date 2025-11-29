@@ -5,6 +5,9 @@ declare global {
       DATABASE_URI: string
       NEXT_PUBLIC_SERVER_URL: string
       VERCEL_PROJECT_PRODUCTION_URL: string
+      BLOB_READ_WRITE_TOKEN?: string
+      BLOB_STORE_ID?: string
+      BLOB_BASE_URL?: string
     }
   }
 }

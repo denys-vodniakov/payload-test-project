@@ -5,11 +5,15 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "prebuild": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
     "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
     "postbuild": "next-sitemap --config next-sitemap.config.cjs",
     "migrate": "cross-env NODE_OPTIONS=--no-deprecation payload migrate",
     "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
     "migrate:status": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:status",
+    "migrate:media-to-blob": "cross-env NODE_OPTIONS=--no-deprecation tsx src/scripts/migrate-media-to-blob.ts",
+    "check:media-urls": "cross-env NODE_OPTIONS=--no-deprecation tsx src/scripts/check-media-urls.ts",
+    "fix:media-urls": "cross-env NODE_OPTIONS=--no-deprecation tsx src/scripts/fix-media-urls-from-blob.ts",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
     "dev:prod": "cross-env NODE_OPTIONS=--no-deprecation rm -rf .next && pnpm build && pnpm start",
     "generate:importmap": "cross-env NODE_OPTIONS=--no-deprecation payload generate:importmap",
@@ -36,6 +40,7 @@
     "@payloadcms/plugin-search": "3.60.0",
     "@payloadcms/plugin-seo": "3.60.0",
     "@payloadcms/richtext-lexical": "3.60.0",
+    "@payloadcms/storage-vercel-blob": "^3.60.0",
     "@payloadcms/ui": "3.60.0",
     "@radix-ui/react-checkbox": "^1.0.4",
     "@radix-ui/react-collapsible": "^1.1.12",
@@ -44,6 +49,7 @@
     "@radix-ui/react-select": "^2.0.0",
     "@radix-ui/react-slot": "^1.0.2",
     "@types/jsonwebtoken": "^9.0.10",
+    "@vercel/blob": "^2.0.0",
     "@vercel/speed-insights": "^1.2.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -84,12 +90,13 @@
     "postcss": "^8.4.38",
     "prettier": "^3.4.2",
     "tailwindcss": "^3.4.3",
+    "tsx": "^4.20.6",
     "typescript": "5.7.3",
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "3.2.3"
   },
   "engines": {
-    "node": "^18.20.2 || >=20.9.0",
+    "node": "22.x",
     "pnpm": "^9 || ^10"
   },
   "pnpm": {
