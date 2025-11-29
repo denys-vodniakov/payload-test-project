@@ -1921,23 +1921,35 @@ export interface Footer {
    * Short description of the company or project that will be displayed under the logo in the footer
    */
   description?: string | null;
-  navItems?:
+  /**
+   * Navigation blocks that will be displayed in the footer. You can add up to 3 blocks.
+   */
+  navBlocks?:
     | {
-        link: {
-          type?: ('reference' | 'custom') | null;
-          newTab?: boolean | null;
-          reference?:
-            | ({
-                relationTo: 'pages';
-                value: number | Page;
-              } | null)
-            | ({
-                relationTo: 'posts';
-                value: number | Post;
-              } | null);
-          url?: string | null;
-          label: string;
-        };
+        /**
+         * Title of the navigation block
+         */
+        title: string;
+        links?:
+          | {
+              link: {
+                type?: ('reference' | 'custom') | null;
+                newTab?: boolean | null;
+                reference?:
+                  | ({
+                      relationTo: 'pages';
+                      value: number | Page;
+                    } | null)
+                  | ({
+                      relationTo: 'posts';
+                      value: number | Post;
+                    } | null);
+                url?: string | null;
+                label: string;
+              };
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
@@ -2014,17 +2026,23 @@ export interface FooterSelect<T extends boolean = true> {
         mobile?: T;
       };
   description?: T;
-  navItems?:
+  navBlocks?:
     | T
     | {
-        link?:
+        title?: T;
+        links?:
           | T
           | {
-              type?: T;
-              newTab?: T;
-              reference?: T;
-              url?: T;
-              label?: T;
+              link?:
+                | T
+                | {
+                    type?: T;
+                    newTab?: T;
+                    reference?: T;
+                    url?: T;
+                    label?: T;
+                  };
+              id?: T;
             };
         id?: T;
       };

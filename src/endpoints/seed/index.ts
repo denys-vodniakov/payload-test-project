@@ -45,18 +45,18 @@ export const seed = async ({
 
   // clear the database
   await Promise.all(
-    globals.map((global) =>
-      payload.updateGlobal({
+    globals.map((global) => {
+      // Footer uses navBlocks, header uses navItems
+      const clearData = global === 'footer' ? { navBlocks: [] } : { navItems: [] }
+      return payload.updateGlobal({
         slug: global,
-        data: {
-          navItems: [],
-        },
+        data: clearData as any,
         depth: 0,
         context: {
           disableRevalidate: true,
         },
-      }),
-    ),
+      })
+    }),
   )
 
   await Promise.all(
@@ -245,29 +245,34 @@ export const seed = async ({
     payload.updateGlobal({
       slug: 'footer',
       data: {
-        navItems: [
+        navBlocks: [
           {
-            link: {
-              type: 'custom',
-              label: 'Admin',
-              url: '/admin',
-            },
-          },
-          {
-            link: {
-              type: 'custom',
-              label: 'Source Code',
-              newTab: true,
-              url: 'https://github.com/payloadcms/payload/tree/main/templates/website',
-            },
-          },
-          {
-            link: {
-              type: 'custom',
-              label: 'Payload',
-              newTab: true,
-              url: 'https://payloadcms.com/',
-            },
+            title: 'Navigation',
+            links: [
+              {
+                link: {
+                  type: 'custom',
+                  label: 'Admin',
+                  url: '/admin',
+                },
+              },
+              {
+                link: {
+                  type: 'custom',
+                  label: 'Source Code',
+                  newTab: true,
+                  url: 'https://github.com/payloadcms/payload/tree/main/templates/website',
+                },
+              },
+              {
+                link: {
+                  type: 'custom',
+                  label: 'Payload',
+                  newTab: true,
+                  url: 'https://payloadcms.com/',
+                },
+              },
+            ],
           },
         ],
       },

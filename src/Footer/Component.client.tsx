@@ -15,22 +15,44 @@ interface FooterClientProps {
 }
 
 export const FooterClient: React.FC<FooterClientProps> = ({ data }) => {
-  /* Storing the value in a useState to avoid hydration errors */
-  const [theme, setTheme] = useState<string | null>(null)
   const { theme: globalTheme } = useTheme()
 
-  // Track changes to global theme via data-theme attribute
+  // Initialize theme from data-theme attribute (set by InitTheme script before hydration)
+  // This ensures server and client render the same initial value
+  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>(() => {
+    // InitTheme script runs beforeInteractive, so data-theme should be set by the time component mounts
+    if (typeof window !== 'undefined') {
+      const dataTheme = document.documentElement.getAttribute('data-theme')
+      if (dataTheme === 'dark' || dataTheme === 'light') {
+        return dataTheme as 'light' | 'dark'
+      }
+      // Fallback to system preference
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    }
+    // Server-side: use default theme
+    return 'light'
+  })
+
+  // Sync with globalTheme from provider
+  useEffect(() => {
+    if (globalTheme && globalTheme !== currentTheme) {
+      setCurrentTheme(globalTheme)
+    }
+  }, [globalTheme, currentTheme])
+
+  // Listen for data-theme attribute changes (when theme changes externally)
   useEffect(() => {
     const checkTheme = () => {
       const dataTheme = document.documentElement.getAttribute('data-theme')
-      if (dataTheme && dataTheme !== theme) {
-        setTheme(dataTheme)
+      if (dataTheme === 'dark' || dataTheme === 'light') {
+        setCurrentTheme(dataTheme as 'light' | 'dark')
       }
     }
 
+    // Check immediately
     checkTheme()
 
-    // Listen for changes in theme
+    // Listen for changes
     const observer = new MutationObserver(checkTheme)
     observer.observe(document.documentElement, {
       attributes: true,
@@ -40,33 +62,40 @@ export const FooterClient: React.FC<FooterClientProps> = ({ data }) => {
     return () => {
       observer.disconnect()
     }
-  }, [theme])
-
-  useEffect(() => {
-    if (globalTheme && globalTheme !== theme) {
-      // Use global theme
-      setTheme(globalTheme)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [globalTheme])
+  }, [])
 
   // Get logo theme - use globalTheme or current theme
   const logoTheme: 'dark' | 'light' | null =
-    globalTheme || (theme === 'dark' || theme === 'light' ? theme : null) || null
+    globalTheme ||
+    (currentTheme === 'dark' || currentTheme === 'light' ? currentTheme : null) ||
+    null
 
   // Get logo data
   const logoData = data.logo || null
 
-  const navItems = data?.navItems || []
-  const copyright = data?.copyright || '© 2024'
+  const navBlocks = (data?.navBlocks || []) as Array<{
+    title: string
+    links?: Array<{
+      link: {
+        type?: 'reference' | 'custom' | null
+        newTab?: boolean | null
+        reference?: any
+        url?: string | null
+        label: string
+      }
+      id?: string | null
+    }> | null
+    id?: string | null
+  }>
+  const copyright = data?.copyright || '© 2025'
   const description = data?.description || ''
   const socialLinks = data?.socialLinks || []
 
-  const currentTheme = globalTheme || theme || 'light'
   const isDark = currentTheme === 'dark'
 
   return (
     <footer
+      suppressHydrationWarning
       className={`mt-auto border-t transition-all duration-500 ${
         isDark
           ? 'bg-gradient-to-b from-card via-card/95 to-card/90 border-border/50 backdrop-blur-xl'
@@ -101,57 +130,89 @@ export const FooterClient: React.FC<FooterClientProps> = ({ data }) => {
             )}
           </div>
 
-          {/* Navigation section */}
-          <div
-            className="md:col-span-5 md:col-start-6 animate-in fade-in slide-in-up"
-            style={{ animationDelay: '100ms' }}
-          >
-            <h3
-              className={`text-sm font-semibold mb-4 uppercase tracking-wider ${
-                isDark ? 'text-foreground' : 'text-foreground'
-              }`}
-            >
-              Navigation
-            </h3>
-            <nav className="flex flex-col gap-3">
-              {navItems.length > 0 ? (
-                navItems.map(({ link }, i) => (
-                  <div
-                    key={i}
-                    className="animate-in fade-in slide-in-left"
-                    style={{ animationDelay: `${i * 50}ms` }}
-                  >
-                    <CMSLink
-                      className={`group text-sm transition-all duration-300 hover:text-primary hover:translate-x-1 inline-flex items-center gap-2 relative ${
-                        isDark
-                          ? 'text-muted-foreground hover:text-foreground'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                      {...link}
-                    >
-                      <span className="absolute left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
-                      <span className="relative z-10">{link.label || link.url}</span>
-                    </CMSLink>
-                  </div>
-                ))
-              ) : (
-                <span
-                  className={`text-sm ${isDark ? 'text-muted-foreground' : 'text-muted-foreground'}`}
+          {/* Navigation blocks */}
+          {navBlocks.length > 0 && (
+            <div className="md:col-span-8 md:col-start-5 grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6">
+              {navBlocks.map((block, blockIndex: number) => (
+                <div
+                  key={block.id || blockIndex}
+                  className="animate-in fade-in slide-in-up"
+                  style={{ animationDelay: `${100 + blockIndex * 50}ms` }}
                 >
-                  Navigation list is empty
-                </span>
-              )}
-            </nav>
-          </div>
+                  <h3
+                    className={`text-sm font-semibold mb-4 uppercase tracking-wider ${
+                      isDark ? 'text-foreground' : 'text-foreground'
+                    }`}
+                  >
+                    {block.title || 'Navigation'}
+                  </h3>
+                  <nav className="flex flex-col gap-3">
+                    {block.links && block.links.length > 0 ? (
+                      block.links.map((navItem, i: number) => {
+                        const { link } = navItem
+                        return (
+                          <div
+                            key={navItem.id || i}
+                            className="animate-in fade-in slide-in-left"
+                            style={{ animationDelay: `${blockIndex * 100 + i * 50}ms` }}
+                          >
+                            <CMSLink
+                              className={`group text-sm transition-all duration-300 hover:text-primary hover:translate-x-1 inline-flex items-center gap-2 relative ${
+                                isDark
+                                  ? 'text-muted-foreground hover:text-foreground'
+                                  : 'text-muted-foreground hover:text-foreground'
+                              }`}
+                              {...link}
+                            >
+                              <span className="absolute left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+                              <span className="relative z-10">{link.label || link.url}</span>
+                            </CMSLink>
+                          </div>
+                        )
+                      })
+                    ) : (
+                      <span
+                        className={`text-sm ${isDark ? 'text-muted-foreground' : 'text-muted-foreground'}`}
+                      >
+                        No links
+                      </span>
+                    )}
+                  </nav>
+                </div>
+              ))}
+            </div>
+          )}
 
-          {/* Social links and settings */}
+          {/* Social links and settings - Second row under first navigation block */}
           <div
-            className="md:col-span-3 md:col-start-10 animate-in fade-in slide-in-right"
+            className="md:col-span-8 md:col-start-1 md:row-start-2 animate-in fade-in slide-in-right flex flex-col md:flex-row md:items-start gap-8 md:gap-12"
             style={{ animationDelay: '200ms' }}
           >
+            {/* Settings */}
+            <div className="flex-shrink-0">
+              <h3
+                className={`text-sm font-semibold mb-4 uppercase tracking-wider ${
+                  isDark ? 'text-foreground' : 'text-foreground'
+                }`}
+              >
+                Settings
+              </h3>
+              <div
+                className={`inline-flex items-center gap-3 rounded-lg transition-all duration-300`}
+              >
+                <span
+                  className={`text-xs font-medium whitespace-nowrap ${
+                    isDark ? 'text-muted-foreground' : 'text-muted-foreground'
+                  }`}
+                >
+                  Theme:
+                </span>
+                <ThemeSelector />
+              </div>
+            </div>
             {/* Social Links */}
             {socialLinks.length > 0 && (
-              <div className="mb-6">
+              <div className="flex-1 w-full">
                 <h3
                   className={`text-sm font-semibold mb-4 uppercase tracking-wider ${
                     isDark ? 'text-foreground' : 'text-foreground'
@@ -159,7 +220,7 @@ export const FooterClient: React.FC<FooterClientProps> = ({ data }) => {
                 >
                   Follow Us
                 </h3>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-row flex-wrap gap-2">
                   {socialLinks.map((social, i) => (
                     <a
                       key={i}
@@ -192,41 +253,13 @@ export const FooterClient: React.FC<FooterClientProps> = ({ data }) => {
                 </div>
               </div>
             )}
-
-            {/* Settings */}
-            <div>
-              <h3
-                className={`text-sm font-semibold mb-4 uppercase tracking-wider ${
-                  isDark ? 'text-foreground' : 'text-foreground'
-                }`}
-              >
-                Settings
-              </h3>
-              <div className="flex flex-col gap-4">
-                <div
-                  className={`inline-flex items-center gap-3 p-3 rounded-lg transition-all duration-300 ${
-                    isDark
-                      ? 'bg-card/50 border border-border/50 hover:bg-card/70'
-                      : 'bg-muted/30 border border-border/30 hover:bg-muted/50'
-                  }`}
-                >
-                  <span
-                    className={`text-xs font-medium ${
-                      isDark ? 'text-muted-foreground' : 'text-muted-foreground'
-                    }`}
-                  >
-                    Theme:
-                  </span>
-                  <ThemeSelector />
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
 
       {/* Bottom bar with copyright */}
       <div
+        suppressHydrationWarning
         className={`border-t transition-all duration-500 ${
           isDark
             ? 'border-border/50 bg-card/30 backdrop-blur-xl'

@@ -56,20 +56,46 @@ export const Footer: GlobalConfig = {
       },
     },
     {
-      name: 'navItems',
+      name: 'navBlocks',
       type: 'array',
-      fields: [
-        link({
-          appearances: false,
-        }),
-      ],
-      maxRows: 6,
+      label: 'Navigation Blocks',
       admin: {
-        initCollapsed: true,
-        components: {
-          RowLabel: '@/Footer/RowLabel#RowLabel',
-        },
+        description:
+          'Navigation blocks that will be displayed in the footer. You can add up to 3 blocks.',
+        initCollapsed: false,
       },
+      minRows: 1,
+      maxRows: 3,
+      fields: [
+        {
+          name: 'title',
+          type: 'text',
+          label: 'Block Title',
+          required: true,
+          admin: {
+            placeholder: 'Navigation',
+            description: 'Title of the navigation block',
+          },
+          defaultValue: 'Navigation',
+        },
+        {
+          name: 'links',
+          type: 'array',
+          label: 'Links',
+          fields: [
+            link({
+              appearances: false,
+            }),
+          ],
+          maxRows: 8,
+          admin: {
+            initCollapsed: true,
+            components: {
+              RowLabel: '@/Footer/RowLabel#RowLabel',
+            },
+          },
+        },
+      ],
     },
     {
       name: 'socialLinks',

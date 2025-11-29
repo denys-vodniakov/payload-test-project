@@ -1,0 +1,5 @@
+{
+  "id": "20251129_180732",
+  "up": "DO $$ \nBEGIN\n  -- Check if old enum exists and new enum doesn't exist\n  IF EXISTS (\n    SELECT 1 FROM pg_type WHERE typname = 'enum_footer_nav_items_link_type'\n  ) AND NOT EXISTS (\n    SELECT 1 FROM pg_type WHERE typname = 'enum_footer_nav_blocks_links_link_type'\n  ) THEN\n    -- Rename the enum type\n    ALTER TYPE \"public\".\"enum_footer_nav_items_link_type\" \n    RENAME TO \"enum_footer_nav_blocks_links_link_type\";\n  END IF;\nEND $$;\n\nDROP TABLE IF EXISTS \"footer_nav_items\" CASCADE;"
+}
+
