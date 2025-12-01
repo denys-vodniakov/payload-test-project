@@ -155,7 +155,7 @@ export interface Page {
   id: number;
   title: string;
   hero: {
-    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact';
+    type: 'none' | 'highImpact' | 'mediumImpact' | 'lowImpact' | 'modernHero';
     richText?: {
       root: {
         type: string;
@@ -171,6 +171,10 @@ export interface Page {
       };
       [k: string]: unknown;
     } | null;
+    /**
+     * Подзаголовок для hero секции
+     */
+    subtitle?: string | null;
     links?:
       | {
           link: {
@@ -196,8 +200,37 @@ export interface Page {
         }[]
       | null;
     media?: (number | null) | Media;
+    /**
+     * Показать статистику
+     */
+    showStats?: boolean | null;
+    /**
+     * Статистика для отображения
+     */
+    stats?:
+      | {
+          /**
+           * Значение (например: "1000+")
+           */
+          value: string;
+          /**
+           * Подпись (например: "Questions in database")
+           */
+          label: string;
+          icon?: ('trophy' | 'zap' | 'clock' | 'users' | 'book' | 'star') | null;
+          id?: string | null;
+        }[]
+      | null;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  layout: (
+    | CallToActionBlock
+    | ContentBlock
+    | MediaBlock
+    | ArchiveBlock
+    | FormBlock
+    | TestsCarouselBlock
+    | WhyChooseUsBlock
+  )[];
   meta?: {
     title?: string | null;
     /**
@@ -755,6 +788,100 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestsCarouselBlock".
+ */
+export interface TestsCarouselBlock {
+  /**
+   * Заголовок секции карусели
+   */
+  title: string;
+  /**
+   * Подзаголовок секции карусели
+   */
+  subtitle: string;
+  /**
+   * Режим выбора тестов для отображения
+   */
+  testSelectionMode: 'latest' | 'manual' | 'category' | 'difficulty';
+  /**
+   * Выберите тесты для отображения в карусели
+   */
+  manualTests?: (number | Test)[] | null;
+  /**
+   * Фильтр по категории
+   */
+  categoryFilter?: ('react' | 'nextjs' | 'javascript' | 'typescript' | 'css-html' | 'general' | 'mixed') | null;
+  /**
+   * Фильтр по сложности
+   */
+  difficultyFilter?: ('easy' | 'medium' | 'hard' | 'mixed') | null;
+  /**
+   * Порядок сортировки тестов
+   */
+  sortOrder: 'createdAt-desc' | 'createdAt-asc' | 'title-asc' | 'title-desc' | 'updatedAt-desc' | 'updatedAt-asc';
+  /**
+   * Максимальное количество тестов для отображения
+   */
+  limit?: number | null;
+  /**
+   * Количество видимых слайдов одновременно (для десктопа)
+   */
+  slidesToShow?: number | null;
+  /**
+   * Автоматическая прокрутка карусели
+   */
+  autoplay?: boolean | null;
+  /**
+   * Скорость автопрокрутки в миллисекундах (рекомендуется кратно 500)
+   */
+  autoplaySpeed?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testsCarousel';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tests".
+ */
+export interface Test {
+  id: number;
+  /**
+   * Test title
+   */
+  title: string;
+  /**
+   * Test description
+   */
+  description?: string | null;
+  /**
+   * Test category
+   */
+  category: 'react' | 'nextjs' | 'javascript' | 'typescript' | 'css-html' | 'general' | 'mixed';
+  /**
+   * Difficulty level
+   */
+  difficulty: 'easy' | 'medium' | 'hard' | 'mixed';
+  /**
+   * Time limit in minutes (0 = no limit)
+   */
+  timeLimit?: number | null;
+  /**
+   * Questions for the test (required)
+   */
+  questions?: (number | Question)[] | null;
+  /**
+   * Is the test active
+   */
+  isActive?: boolean | null;
+  /**
+   * Percentage for passing the test
+   */
+  passingScore?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "questions".
  */
 export interface Question {
@@ -856,44 +983,86 @@ export interface Question {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "tests".
+ * via the `definition` "WhyChooseUsBlock".
  */
-export interface Test {
-  id: number;
+export interface WhyChooseUsBlock {
   /**
-   * Test title
+   * Заголовок секции
    */
   title: string;
   /**
-   * Test description
+   * Подзаголовок секции (опционально)
    */
-  description?: string | null;
+  subtitle?: string | null;
   /**
-   * Test category
+   * Описание секции (опционально)
    */
-  category: 'react' | 'nextjs' | 'javascript' | 'typescript' | 'css-html' | 'general' | 'mixed';
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   /**
-   * Difficulty level
+   * Список преимуществ
    */
-  difficulty: 'easy' | 'medium' | 'hard' | 'mixed';
+  features: {
+    /**
+     * Название преимущества
+     */
+    title: string;
+    /**
+     * Описание преимущества
+     */
+    description: string;
+    /**
+     * Иконка для преимущества
+     */
+    icon?:
+      | (
+          | 'zap'
+          | 'rocket'
+          | 'target'
+          | 'diamond'
+          | 'star'
+          | 'fire'
+          | 'book'
+          | 'trophy'
+          | 'settings'
+          | 'lightbulb'
+          | 'palette'
+          | 'lock'
+          | 'smartphone'
+          | 'globe'
+          | 'users'
+        )
+      | null;
+    /**
+     * Цвет градиента для карточки
+     */
+    gradientColor?: ('blue' | 'green' | 'purple' | 'orange' | 'pink' | 'yellow' | 'cyan' | 'red') | null;
+    id?: string | null;
+  }[];
   /**
-   * Time limit in minutes (0 = no limit)
+   * Способ отображения преимуществ
    */
-  timeLimit?: number | null;
+  layout?: ('grid' | 'list' | 'carousel') | null;
   /**
-   * Questions for the test (required)
+   * Количество колонок в сетке
    */
-  questions?: (number | Question)[] | null;
-  /**
-   * Is the test active
-   */
-  isActive?: boolean | null;
-  /**
-   * Percentage for passing the test
-   */
-  passingScore?: number | null;
-  updatedAt: string;
-  createdAt: string;
+  columns?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'whyChooseUs';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1234,6 +1403,7 @@ export interface PagesSelect<T extends boolean = true> {
     | {
         type?: T;
         richText?: T;
+        subtitle?: T;
         links?:
           | T
           | {
@@ -1250,6 +1420,15 @@ export interface PagesSelect<T extends boolean = true> {
               id?: T;
             };
         media?: T;
+        showStats?: T;
+        stats?:
+          | T
+          | {
+              value?: T;
+              label?: T;
+              icon?: T;
+              id?: T;
+            };
       };
   layout?:
     | T
@@ -1259,6 +1438,8 @@ export interface PagesSelect<T extends boolean = true> {
         mediaBlock?: T | MediaBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
+        testsCarousel?: T | TestsCarouselBlockSelect<T>;
+        whyChooseUs?: T | WhyChooseUsBlockSelect<T>;
       };
   meta?:
     | T
@@ -1355,6 +1536,47 @@ export interface FormBlockSelect<T extends boolean = true> {
   form?: T;
   enableIntro?: T;
   introContent?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestsCarouselBlock_select".
+ */
+export interface TestsCarouselBlockSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  testSelectionMode?: T;
+  manualTests?: T;
+  categoryFilter?: T;
+  difficultyFilter?: T;
+  sortOrder?: T;
+  limit?: T;
+  slidesToShow?: T;
+  autoplay?: T;
+  autoplaySpeed?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WhyChooseUsBlock_select".
+ */
+export interface WhyChooseUsBlockSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  description?: T;
+  features?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        icon?: T;
+        gradientColor?: T;
+        id?: T;
+      };
+  layout?: T;
+  columns?: T;
   id?: T;
   blockName?: T;
 }

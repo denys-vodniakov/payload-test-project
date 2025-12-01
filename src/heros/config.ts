@@ -35,6 +35,10 @@ export const hero: Field = {
           label: 'Low Impact',
           value: 'lowImpact',
         },
+        {
+          label: 'Modern Hero (with animated background)',
+          value: 'modernHero',
+        },
       ],
       required: true,
     },
@@ -53,6 +57,14 @@ export const hero: Field = {
       }),
       label: false,
     },
+    {
+      name: 'subtitle',
+      type: 'text',
+      admin: {
+        condition: (_, { type } = {}) => type === 'modernHero',
+        description: 'Подзаголовок для hero секции',
+      },
+    },
     linkGroup({
       overrides: {
         maxRows: 2,
@@ -66,6 +78,54 @@ export const hero: Field = {
       },
       relationTo: 'media',
       required: true,
+    },
+    {
+      name: 'showStats',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: {
+        condition: (_, { type } = {}) => type === 'modernHero',
+        description: 'Показать статистику',
+      },
+    },
+    {
+      name: 'stats',
+      type: 'array',
+      admin: {
+        condition: (_, { type, showStats } = {}) => type === 'modernHero' && showStats,
+        description: 'Статистика для отображения',
+      },
+      fields: [
+        {
+          name: 'value',
+          type: 'text',
+          required: true,
+          admin: {
+            description: 'Значение (например: "1000+")',
+          },
+        },
+        {
+          name: 'label',
+          type: 'text',
+          required: true,
+          admin: {
+            description: 'Подпись (например: "Questions in database")',
+          },
+        },
+        {
+          name: 'icon',
+          type: 'select',
+          defaultValue: 'trophy',
+          options: [
+            { label: '🏆 Trophy', value: 'trophy' },
+            { label: '⚡ Zap', value: 'zap' },
+            { label: '⏰ Clock', value: 'clock' },
+            { label: '👥 Users', value: 'users' },
+            { label: '📚 Book', value: 'book' },
+            { label: '⭐ Star', value: 'star' },
+          ],
+        },
+      ],
     },
   ],
   label: false,
