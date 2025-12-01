@@ -150,6 +150,7 @@ export const FooterClient: React.FC<FooterClientProps> = ({ data }) => {
                     {block.links && block.links.length > 0 ? (
                       block.links.map((navItem, i: number) => {
                         const { link } = navItem
+                        const { label, ...linkProps } = link
                         return (
                           <div
                             key={navItem.id || i}
@@ -162,7 +163,7 @@ export const FooterClient: React.FC<FooterClientProps> = ({ data }) => {
                                   ? 'text-muted-foreground hover:text-foreground'
                                   : 'text-muted-foreground hover:text-foreground'
                               }`}
-                              {...link}
+                              {...linkProps}
                             >
                               <span className="absolute left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
                               <span className="relative z-10">{link.label || link.url}</span>
@@ -227,6 +228,7 @@ export const FooterClient: React.FC<FooterClientProps> = ({ data }) => {
                       href={social.url || '#'}
                       target="_blank"
                       rel="noopener noreferrer"
+                      suppressHydrationWarning
                       className={`group flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 ${
                         isDark
                           ? 'bg-card/50 border border-border/50 hover:bg-card/70 hover:border-primary/50'
