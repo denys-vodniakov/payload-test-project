@@ -421,7 +421,27 @@ export interface Category {
  */
 export interface User {
   id: number;
-  name?: string | null;
+  name: string;
+  /**
+   * User profile picture
+   */
+  avatar?: (number | null) | Media;
+  /**
+   * Phone number
+   */
+  phone?: string | null;
+  /**
+   * Short bio or description
+   */
+  bio?: string | null;
+  /**
+   * Company or organization
+   */
+  company?: string | null;
+  /**
+   * Job title or position
+   */
+  position?: string | null;
   /**
    * User role - Admin has access to admin panel and user features
    */
@@ -1730,6 +1750,11 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  avatar?: T;
+  phone?: T;
+  bio?: T;
+  company?: T;
+  position?: T;
   role?: T;
   updatedAt?: T;
   createdAt?: T;

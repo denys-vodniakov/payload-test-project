@@ -36,14 +36,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 })
     }
 
-    // Create new user
+    // Create new user (override access to allow public registration)
     const user = await payload.create({
       collection: 'users',
       data: {
         name: name.trim(),
         email: email.trim(),
         password,
+        role: 'user', // Default role for new users
       },
+      overrideAccess: true, // Allow creation without admin access
     })
 
     // Create JWT token
@@ -66,6 +68,19 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Registration error:', error)
-    return NextResponse.json({ error: 'Error registering user' }, { status: 500 })
+    
+    // Provide more specific error message
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    
+    // Check for common Payload errors
+    if (errorMessage.includes('E11000') || errorMessage.includes('duplicate')) {
+      return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 })
+    }
+    
+    if (errorMessage.includes('validation')) {
+      return NextResponse.json({ error: 'Invalid data provided' }, { status: 400 })
+    }
+    
+    return NextResponse.json({ error: 'Error registering user. Please try again.' }, { status: 500 })
   }
 }

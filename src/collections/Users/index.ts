@@ -32,7 +32,7 @@ export const Users: CollectionConfig = {
     },
   },
   admin: {
-    defaultColumns: ['name', 'email', 'role'],
+    defaultColumns: ['name', 'email', 'phone', 'role'],
     useAsTitle: 'name',
   },
   auth: true,
@@ -40,6 +40,43 @@ export const Users: CollectionConfig = {
     {
       name: 'name',
       type: 'text',
+      required: true,
+    },
+    {
+      name: 'avatar',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'User profile picture',
+      },
+    },
+    {
+      name: 'phone',
+      type: 'text',
+      admin: {
+        description: 'Phone number',
+      },
+    },
+    {
+      name: 'bio',
+      type: 'textarea',
+      admin: {
+        description: 'Short bio or description',
+      },
+    },
+    {
+      name: 'company',
+      type: 'text',
+      admin: {
+        description: 'Company or organization',
+      },
+    },
+    {
+      name: 'position',
+      type: 'text',
+      admin: {
+        description: 'Job title or position',
+      },
     },
     {
       name: 'role',

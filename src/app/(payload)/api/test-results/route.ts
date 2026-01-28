@@ -1,16 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import configPromise from '@payload-config'
+import jwt from 'jsonwebtoken'
+
+const JWT_SECRET = process.env.PAYLOAD_SECRET || 'fallback-secret'
+
+interface JWTPayload {
+  userId: string | number
+  email: string
+}
+
+async function getUserFromRequest(request: NextRequest, payload: any) {
+  // Try Authorization header first
+  const authHeader = request.headers.get('Authorization')
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.slice(7)
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload
+      return decoded.userId
+    } catch (error) {
+      // Token invalid, try cookie
+    }
+  }
+
+  // Try Payload cookie
+  try {
+    const { user } = await payload.auth({ headers: request.headers })
+    if (user) {
+      return user.id
+    }
+  } catch (error) {
+    // Cookie invalid
+  }
+
+  return null
+}
 
 export async function POST(request: NextRequest) {
   try {
     const payload = await getPayload({ config: configPromise })
     const body = await request.json()
 
-    const { testId, answers, timeSpent, userId } = body
+    const { testId, answers, timeSpent } = body
 
-    if (!testId || !answers || !userId) {
+    if (!testId || !answers) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    // Get user ID from authentication
+    const userId = await getUserFromRequest(request, payload)
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Authentication required to save test results' }, { status: 401 })
     }
 
     // Normalize IDs to numbers (Payload requires numeric IDs for relationships)

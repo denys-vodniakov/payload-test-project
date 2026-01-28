@@ -13,10 +13,12 @@ import AnimatedBackground from '@/components/AnimatedBackground'
 import GlassCard from '@/components/GlassCard'
 import GradientText from '@/components/GradientText'
 import { useTheme } from '@/providers/Theme'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function LoginPage() {
   const router = useRouter()
   const { theme, setTheme } = useTheme()
+  const { login } = useAuth()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -61,32 +63,18 @@ export default function LoginPage() {
 
     setLoading(true)
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email.trim(),
-          password: formData.password,
-        }),
-      })
+      // Use login from AuthContext to update the state correctly
+      const result = await login(formData.email.trim(), formData.password)
 
-      const data = await response.json()
-
-      if (response.ok) {
-        // Сохраняем токен в localStorage
-        localStorage.setItem('authToken', data.token)
-        localStorage.setItem('user', JSON.stringify(data.user))
-
-        // Перенаправляем в кабинет
+      if (result.success) {
+        // Redirect to dashboard
         router.push('/dashboard')
       } else {
-        setErrors({ general: data.error || 'Неверный email или пароль' })
+        setErrors({ general: result.error || 'Invalid email or password' })
       }
     } catch (error) {
       console.error('Login error:', error)
-      setErrors({ general: 'Произошла ошибка при входе' })
+      setErrors({ general: 'An error occurred during login' })
     } finally {
       setLoading(false)
     }

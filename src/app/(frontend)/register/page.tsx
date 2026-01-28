@@ -43,31 +43,31 @@ export default function RegisterPage() {
     const newErrors: Record<string, string> = {}
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Имя обязательно для заполнения'
+      newErrors.name = 'Name is required'
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Имя должно содержать минимум 2 символа'
+      newErrors.name = 'Name must be at least 2 characters'
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email обязателен для заполнения'
+      newErrors.email = 'Email is required'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Введите корректный email'
+      newErrors.email = 'Enter a valid email'
     }
 
     if (!formData.password) {
-      newErrors.password = 'Пароль обязателен для заполнения'
+      newErrors.password = 'Password is required'
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Пароль должен содержать минимум 6 символов'
+      newErrors.password = 'Password must be at least 6 characters'
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Подтвердите пароль'
+      newErrors.confirmPassword = 'Confirm password'
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Пароли не совпадают'
+      newErrors.confirmPassword = 'Passwords do not match'
     }
 
     if (!agreeToTerms) {
-      newErrors.terms = 'Необходимо согласиться с условиями использования'
+      newErrors.terms = 'You must agree to the terms of use'
     }
 
     setErrors(newErrors)
@@ -83,7 +83,7 @@ export default function RegisterPage() {
 
     setLoading(true)
     try {
-      // Используем register из AuthContext для правильного обновления состояния
+      // Use register from AuthContext to update the state correctly
       const result = await register(
         formData.name.trim(),
         formData.email.trim(),
@@ -151,7 +151,7 @@ export default function RegisterPage() {
                     id="name"
                     name="name"
                     type="text"
-                    placeholder="Введите ваше имя"
+                    placeholder="Enter your name"
                     value={formData.name}
                     onChange={handleInputChange}
                     className={`pl-10 ${errors.name ? 'border-red-500' : ''}`}
@@ -172,7 +172,7 @@ export default function RegisterPage() {
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="Введите ваш email"
+                    placeholder="Enter your email"
                     value={formData.email}
                     onChange={handleInputChange}
                     className={`pl-10 ${errors.email ? 'border-red-500' : ''}`}
@@ -193,7 +193,7 @@ export default function RegisterPage() {
                     id="password"
                     name="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Введите пароль"
+                    placeholder="Enter your password"
                     value={formData.password}
                     onChange={handleInputChange}
                     className={`pl-10 pr-10 ${errors.password ? 'border-red-500' : ''}`}
@@ -221,7 +221,7 @@ export default function RegisterPage() {
                     id="confirmPassword"
                     name="confirmPassword"
                     type={showConfirmPassword ? 'text' : 'password'}
-                    placeholder="Подтвердите пароль"
+                    placeholder="Confirm your password"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
                     className={`pl-10 pr-10 ${errors.confirmPassword ? 'border-red-500' : ''}`}

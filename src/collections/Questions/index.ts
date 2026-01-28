@@ -221,18 +221,16 @@ export const Questions: CollectionConfig = {
           // Return data as-is - all processing happens in beforeChange
           return data
         } catch (error) {
-          console.error('❌ [QUESTIONS] CRITICAL ERROR in beforeValidate hook:', error)
+          console.error('CRITICAL ERROR in beforeValidate hook:', error)
           if (req?.payload?.logger) {
-            req.payload.logger.error('❌ Questions beforeValidate error:', error)
+            req.payload.logger.error('Questions beforeValidate error:', error)
           }
-          // Return data as-is to prevent breaking the operation
           return data
         }
       },
     ],
     beforeChange: [
       ({ data, operation, req }) => {
-        // Only process create/update operations
         if (operation !== 'create' && operation !== 'update') {
           return data
         }
@@ -265,7 +263,7 @@ export const Questions: CollectionConfig = {
           })
 
           if (req?.payload?.logger) {
-            req.payload.logger.info('📝 Questions beforeChange hook called', {
+            req.payload.logger.info('Questions beforeChange hook called', {
               operation,
               hasQuestion: !!data.question,
               hasOptions: !!data.options,
@@ -300,10 +298,8 @@ export const Questions: CollectionConfig = {
             })
           }
 
-          // Start with a copy of the data
           const processedData = { ...data }
 
-          // Auto-generate questionTitle from question richText
           if (processedData.question !== undefined && processedData.question !== null) {
             try {
               const extractedText = extractTextFromRichText(processedData.question)
@@ -324,9 +320,6 @@ export const Questions: CollectionConfig = {
             processedData.questionTitle = 'Untitled Question'
           }
 
-          // Clean options data - remove unexpected fields like 'id' from options and feedback
-          // IMPORTANT: Always keep all options to satisfy minRows: 2 requirement
-          // Let Payload's validation handle invalid data with proper error messages
           if (processedData.options && Array.isArray(processedData.options)) {
             try {
               const originalOptionsCount = processedData.options.length
@@ -352,12 +345,12 @@ export const Questions: CollectionConfig = {
               processedData.options = processedData.options.map((option: any, index: number) => {
                 try {
                   if (!option || typeof option !== 'object') {
-                    console.warn(`⚠️ [QUESTIONS] Option ${index} is not an object`, {
+                    console.warn(`Option ${index} is not an object`, {
                       option,
                       type: typeof option,
                     })
                     if (req?.payload?.logger) {
-                      req.payload.logger.warn(`⚠️ Option ${index} is not an object`, {
+                      req.payload.logger.warn(`Option ${index} is not an object`, {
                         option,
                         type: typeof option,
                       })
@@ -365,7 +358,7 @@ export const Questions: CollectionConfig = {
                     return option
                   }
 
-                  // Check if this is an old format question (might have different structure)
+
                   const isOldFormat =
                     !option.text || (typeof option.text === 'string' && !option.text.root)
 
@@ -381,24 +374,18 @@ export const Questions: CollectionConfig = {
                     })
                   }
 
-                  // Create a clean option object, removing any unexpected fields like 'id'
-                  // Keep the option even if text is invalid - let Payload validation handle it
                   const processedOption: any = {
-                    text: option.text, // Keep as-is, let Payload validate
+                    text: option.text,
                     isCorrect: Boolean(option.isCorrect),
                   }
 
-                  // Handle feedback field - ensure it's properly formatted
                   if (option.feedback !== undefined && option.feedback !== null) {
                     if (Array.isArray(option.feedback) && option.feedback.length > 0) {
-                      // Clean feedback array - remove invalid entries and ensure proper structure
                       const cleanedFeedback = option.feedback
                         .filter((fb: any) => fb && typeof fb === 'object')
                         .map((fb: any) => {
-                          // Only include expected fields for feedback, remove any 'id' fields
                           const processedFb: any = {}
 
-                          // Ensure feedbackType is valid
                           if (
                             fb.feedbackType &&
                             (fb.feedbackType === 'correct' || fb.feedbackType === 'incorrect')
@@ -408,7 +395,6 @@ export const Questions: CollectionConfig = {
                             processedFb.feedbackType = 'correct'
                           }
 
-                          // Include content if it exists (even if empty, let Payload handle validation)
                           if (fb.content !== undefined) {
                             processedFb.content = fb.content
                           }
@@ -427,7 +413,6 @@ export const Questions: CollectionConfig = {
 
                   return processedOption
                 } catch (optionError) {
-                  console.error(`❌ [QUESTIONS] Error processing option ${index}:`, optionError)
                   console.error('Option data:', option)
                   // Return option as-is if processing fails
                   return option
@@ -449,7 +434,6 @@ export const Questions: CollectionConfig = {
                 })
               }
             } catch (error) {
-              console.error('❌ [QUESTIONS] Error processing options:', error)
               console.error('Error details:', {
                 message: error instanceof Error ? error.message : String(error),
                 stack: error instanceof Error ? error.stack : undefined,

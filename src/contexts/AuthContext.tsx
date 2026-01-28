@@ -7,9 +7,25 @@ interface User {
   id: string | number
   name?: string | null
   email: string
+  phone?: string | null
+  bio?: string | null
+  company?: string | null
+  position?: string | null
+  avatar?: {
+    url?: string
+    alt?: string
+  } | null
   createdAt: string
   updatedAt: string
   role?: ('user' | 'admin') | null
+}
+
+interface UpdateProfileData {
+  name?: string
+  phone?: string
+  bio?: string
+  company?: string
+  position?: string
 }
 
 interface AuthContextType {
@@ -22,8 +38,11 @@ interface AuthContextType {
     email: string,
     password: string,
   ) => Promise<{ success: boolean; error?: string }>
+  updateProfile: (data: UpdateProfileData) => Promise<{ success: boolean; error?: string }>
+  updateAvatar: (file: File) => Promise<{ success: boolean; error?: string }>
   logout: () => void
   isAuthenticated: boolean
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -46,7 +65,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  // Проверяем сохраненные данные при загрузке
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -54,7 +72,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const savedUser = localStorage.getItem('user')
 
         if (savedToken && savedUser) {
-          // Проверяем валидность токена из localStorage
           const response = await fetch('/api/auth/verify', {
             headers: {
               Authorization: `Bearer ${savedToken}`,
@@ -67,25 +84,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setLoading(false)
             return
           } else {
-            // Токен недействителен, очищаем данные
             localStorage.removeItem('authToken')
             localStorage.removeItem('user')
           }
         }
 
-        // Если в localStorage нет токена, проверяем куку payload-token
-        // Это нужно для пользователей, авторизованных через админку Payload
         const cookieResponse = await fetch('/api/auth/me', {
-          credentials: 'include', // Важно: отправляем куки
+          credentials: 'include',
         })
 
         if (cookieResponse.ok) {
           const data = await cookieResponse.json()
           if (data.user) {
             setUser(data.user)
-            // Для куки токена не сохраняем в localStorage, так как это Payload токен
-            // Но устанавливаем флаг, что пользователь авторизован
-            setToken('cookie-auth') // Маркер для авторизации через куки
+            setToken('cookie-auth')
           }
         }
       } catch (error) {
@@ -119,11 +131,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         localStorage.setItem('user', JSON.stringify(data.user))
         return { success: true }
       } else {
-        return { success: false, error: data.error || 'Ошибка входа' }
+        return { success: false, error: data.error || 'Login error' }
       }
     } catch (error) {
       console.error('Login error:', error)
-      return { success: false, error: 'Произошла ошибка при входе' }
+      return { success: false, error: 'Login error' }
     }
   }
 
@@ -146,11 +158,108 @@ export function AuthProvider({ children }: AuthProviderProps) {
         localStorage.setItem('user', JSON.stringify(data.user))
         return { success: true }
       } else {
-        return { success: false, error: data.error || 'Ошибка регистрации' }
+        return { success: false, error: data.error || 'Registration error' }
       }
     } catch (error) {
       console.error('Register error:', error)
-      return { success: false, error: 'Произошла ошибка при регистрации' }
+      return { success: false, error: 'Registration error' }
+    }
+  }
+
+  const updateProfile = async (data: UpdateProfileData) => {
+    try {
+      const localToken = localStorage.getItem('authToken')
+      const authToken = localToken || (token && token !== 'cookie-auth' ? token : null)
+
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      }
+
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`
+      }
+
+      const response = await fetch('/api/user/profile', {
+        method: 'PATCH',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify(data),
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setUser(result.user)
+        localStorage.setItem('user', JSON.stringify(result.user))
+        return { success: true }
+      } else {
+        return { success: false, error: result.error || 'Failed to update profile' }
+      }
+    } catch (error) {
+      console.error('Update profile error:', error)
+      return { success: false, error: 'Failed to update profile' }
+    }
+  }
+
+  const updateAvatar = async (file: File) => {
+    try {
+      const localToken = localStorage.getItem('authToken')
+      const authToken = localToken || (token && token !== 'cookie-auth' ? token : null)
+
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const headers: HeadersInit = {}
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`
+      }
+
+      const response = await fetch('/api/user/avatar', {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+        body: formData,
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setUser(result.user)
+        localStorage.setItem('user', JSON.stringify(result.user))
+        return { success: true }
+      } else {
+        return { success: false, error: result.error || 'Failed to update avatar' }
+      }
+    } catch (error) {
+      console.error('Update avatar error:', error)
+      return { success: false, error: 'Failed to update avatar' }
+    }
+  }
+
+  const refreshUser = async () => {
+    try {
+      const localToken = localStorage.getItem('authToken')
+      const authToken = localToken || (token && token !== 'cookie-auth' ? token : null)
+
+      const headers: HeadersInit = {}
+      if (authToken) {
+        headers['Authorization'] = `Bearer ${authToken}`
+      }
+
+      const response = await fetch('/api/auth/me', {
+        headers,
+        credentials: 'include',
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.user) {
+          setUser(data.user)
+          localStorage.setItem('user', JSON.stringify(data.user))
+        }
+      }
+    } catch (error) {
+      console.error('Refresh user error:', error)
     }
   }
 
@@ -160,7 +269,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.removeItem('authToken')
     localStorage.removeItem('user')
 
-    // Очищаем куку payload-token, если она есть
     try {
       await fetch('/api/auth/logout', {
         method: 'POST',
@@ -179,8 +287,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     loading,
     login,
     register,
+    updateProfile,
+    updateAvatar,
     logout,
     isAuthenticated: !!user && !!token,
+    refreshUser,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
