@@ -93,11 +93,11 @@ export default function DashboardPage() {
   const [expandedResults, setExpandedResults] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    // Ждем завершения проверки авторизации перед загрузкой статистики
+    // Wait for authentication check to complete before loading statistics
     if (!authLoading && user) {
       fetchStats()
     } else if (!authLoading && !user) {
-      // Если авторизация завершена, но пользователя нет, останавливаем загрузку
+      // If authentication is complete but the user is not found, stop loading
       setLoading(false)
     }
   }, [user, authLoading])
@@ -108,19 +108,19 @@ export default function DashboardPage() {
       const localToken = localStorage.getItem('authToken')
       const authToken = localToken || (token && token !== 'cookie-auth' ? token : null)
 
-      // Подготавливаем заголовки и опции запроса
+      // Prepare headers and request options
       const headers: HeadersInit = {}
       const options: RequestInit = {
-        credentials: 'include', // Всегда отправляем куки
+        credentials: 'include', // Always send cookies
       }
 
-      // Если есть токен в localStorage или AuthContext (не cookie-auth), используем его
+      // If there is a token in localStorage or AuthContext (not cookie-auth), use it
       if (authToken) {
         headers['Authorization'] = `Bearer ${authToken}`
       }
-      // Если токена нет, полагаемся на куку payload-token
+      // If there is no token, rely on the payload-token cookie
 
-      // Получаем результаты тестов пользователя
+      // Get the test results for the user
       const response = await fetch('/api/user/stats', {
         ...options,
         headers,
@@ -133,14 +133,14 @@ export default function DashboardPage() {
         const errorData = await response.json().catch(() => ({}))
         console.error('Error fetching stats:', response.status, errorData)
 
-        // Если это ошибка авторизации, не устанавливаем mock данные
+        // If this is an authorization error, do not set mock data
         if (response.status === 401) {
           console.error('Unauthorized - user may not be authenticated')
           setStats(null)
           return
         }
 
-        // Fallback к mock данным если API недоступен
+        // Fallback to mock data if the API is not available
         const mockStats: Stats = {
           totalTests: 0,
           passedTests: 0,
@@ -153,7 +153,7 @@ export default function DashboardPage() {
       }
     } catch (error) {
       console.error('Error fetching stats:', error)
-      // Fallback к mock данным только если это не ошибка сети/таймаута
+      // Fallback to mock data only if this is not a network/timeout error
       const mockStats: Stats = {
         totalTests: 0,
         passedTests: 0,

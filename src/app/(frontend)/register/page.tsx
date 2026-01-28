@@ -12,10 +12,12 @@ import AnimatedBackground from '@/components/AnimatedBackground'
 import GlassCard from '@/components/GlassCard'
 import GradientText from '@/components/GradientText'
 import { useTheme } from '@/providers/Theme'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function RegisterPage() {
   const router = useRouter()
   const { theme, setTheme } = useTheme()
+  const { register } = useAuth()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -81,33 +83,22 @@ export default function RegisterPage() {
 
     setLoading(true)
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          password: formData.password,
-        }),
-      })
+      // Используем register из AuthContext для правильного обновления состояния
+      const result = await register(
+        formData.name.trim(),
+        formData.email.trim(),
+        formData.password,
+      )
 
-      const data = await response.json()
-
-      if (response.ok) {
-        // Сохраняем токен в localStorage
-        localStorage.setItem('authToken', data.token)
-        localStorage.setItem('user', JSON.stringify(data.user))
-
-        // Перенаправляем в кабинет
+      if (result.success) {
+        // Redirect to dashboard
         router.push('/dashboard')
       } else {
-        setErrors({ general: data.error || 'Ошибка при регистрации' })
+        setErrors({ general: result.error || 'Registration error' })
       }
     } catch (error) {
       console.error('Registration error:', error)
-      setErrors({ general: 'Произошла ошибка при регистрации' })
+      setErrors({ general: 'Registration error' })
     } finally {
       setLoading(false)
     }
@@ -152,7 +143,7 @@ export default function RegisterPage() {
               {/* Name Field */}
               <div className="space-y-2">
                 <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                  Имя
+                  Name
                 </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -194,7 +185,7 @@ export default function RegisterPage() {
               {/* Password Field */}
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                  Пароль
+                  Password
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -222,7 +213,7 @@ export default function RegisterPage() {
               {/* Confirm Password Field */}
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
-                  Подтвердите пароль
+                  Confirm Password
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -262,13 +253,13 @@ export default function RegisterPage() {
                   disabled={loading}
                 />
                 <Label htmlFor="terms" className="text-sm text-gray-600 leading-5">
-                  Я согласен с{' '}
+                  I agree to the{' '}
                   <Link href="/terms" className="text-blue-600 hover:text-blue-800 underline">
-                    условиями использования
+                    terms of use
                   </Link>{' '}
                   и{' '}
                   <Link href="/privacy" className="text-blue-600 hover:text-blue-800 underline">
-                    политикой конфиденциальности
+                    privacy policy
                   </Link>
                 </Label>
               </div>
@@ -290,12 +281,12 @@ export default function RegisterPage() {
                 {loading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Регистрация...
+                    Registering...
                   </>
                 ) : (
                   <>
                     <UserPlus className="mr-2 h-4 w-4" />
-                    Зарегистрироваться
+                    Register
                   </>
                 )}
               </Button>
@@ -304,12 +295,12 @@ export default function RegisterPage() {
             {/* Login Link */}
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Уже есть аккаунт?{' '}
+                Already have an account?{' '}
                 <Link
                   href="/login"
                   className="text-blue-600 hover:text-blue-800 font-medium underline"
                 >
-                  Войти
+                  Login
                 </Link>
               </p>
             </div>
