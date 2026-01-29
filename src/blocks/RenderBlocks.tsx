@@ -8,6 +8,7 @@ import { ContentBlock } from '@/blocks/Content/Component'
 import { FormBlock } from '@/blocks/Form/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
 import { TestsCarouselBlock } from '@/blocks/TestsCarousel/Component'
+import { TestsListBlock } from '@/blocks/TestsList/Component'
 import { WhyChooseUsBlock } from '@/blocks/WhyChooseUs/Component'
 
 const blockComponents = {
@@ -17,6 +18,7 @@ const blockComponents = {
   formBlock: FormBlock,
   mediaBlock: MediaBlock,
   testsCarousel: TestsCarouselBlock,
+  testsList: TestsListBlock,
   whyChooseUs: WhyChooseUsBlock,
 }
 

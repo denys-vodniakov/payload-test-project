@@ -229,6 +229,7 @@ export interface Page {
     | ArchiveBlock
     | FormBlock
     | TestsCarouselBlock
+    | TestsListBlock
     | WhyChooseUsBlock
   )[];
   meta?: {
@@ -1003,6 +1004,89 @@ export interface Question {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestsListBlock".
+ */
+export interface TestsListBlock {
+  /**
+   * Section title (leave empty to hide)
+   */
+  title?: string | null;
+  /**
+   * Section subtitle (leave empty to hide)
+   */
+  subtitle?: string | null;
+  /**
+   * Show search input
+   */
+  showSearch?: boolean | null;
+  /**
+   * Show category filter
+   */
+  showCategoryFilter?: boolean | null;
+  /**
+   * Show difficulty filter
+   */
+  showDifficultyFilter?: boolean | null;
+  /**
+   * Show sort dropdown
+   */
+  showSortOptions?: boolean | null;
+  /**
+   * Show grid/list view toggle
+   */
+  showViewToggle?: boolean | null;
+  /**
+   * Make filters collapsible (expandable panel)
+   */
+  collapsibleFilters?: boolean | null;
+  /**
+   * Pre-selected category filter
+   */
+  defaultCategory?:
+    | ('all' | 'react' | 'nextjs' | 'javascript' | 'typescript' | 'css-html' | 'general' | 'mixed')
+    | null;
+  /**
+   * Pre-selected difficulty filter
+   */
+  defaultDifficulty?: ('all' | 'easy' | 'medium' | 'hard' | 'mixed') | null;
+  /**
+   * Default sort order
+   */
+  defaultSort?: ('-createdAt' | 'createdAt' | 'title' | '-title') | null;
+  /**
+   * Default view mode
+   */
+  defaultView?: ('grid' | 'list') | null;
+  /**
+   * How to load more tests
+   */
+  loadMode?: ('pagination' | 'infinite' | 'loadMore') | null;
+  /**
+   * Allow users to switch between pagination modes
+   */
+  allowLoadModeSwitch?: boolean | null;
+  /**
+   * Number of tests per page/load
+   */
+  itemsPerPage?: number | null;
+  /**
+   * Show animated aurora background
+   */
+  showBackground?: boolean | null;
+  /**
+   * Number of cards per row (desktop)
+   */
+  cardsPerRow?: ('2' | '3' | '4') | null;
+  /**
+   * Card appearance style
+   */
+  cardStyle?: ('default' | 'compact' | 'detailed') | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'testsList';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "WhyChooseUsBlock".
  */
 export interface WhyChooseUsBlock {
@@ -1459,6 +1543,7 @@ export interface PagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         testsCarousel?: T | TestsCarouselBlockSelect<T>;
+        testsList?: T | TestsListBlockSelect<T>;
         whyChooseUs?: T | WhyChooseUsBlockSelect<T>;
       };
   meta?:
@@ -1575,6 +1660,32 @@ export interface TestsCarouselBlockSelect<T extends boolean = true> {
   slidesToShow?: T;
   autoplay?: T;
   autoplaySpeed?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TestsListBlock_select".
+ */
+export interface TestsListBlockSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  showSearch?: T;
+  showCategoryFilter?: T;
+  showDifficultyFilter?: T;
+  showSortOptions?: T;
+  showViewToggle?: T;
+  collapsibleFilters?: T;
+  defaultCategory?: T;
+  defaultDifficulty?: T;
+  defaultSort?: T;
+  defaultView?: T;
+  loadMode?: T;
+  allowLoadModeSwitch?: T;
+  itemsPerPage?: T;
+  showBackground?: T;
+  cardsPerRow?: T;
+  cardStyle?: T;
   id?: T;
   blockName?: T;
 }
