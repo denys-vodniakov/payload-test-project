@@ -7,10 +7,14 @@ export default function AnimatedBackground() {
   const [isVisible, setIsVisible] = useState(true)
 
   useEffect(() => {
+    // Don't run animation on mobile at all (saves main thread and battery)
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      return
+    }
     // Check for reduced motion preference
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (prefersReducedMotion) {
-      return // Don't run animation if user prefers reduced motion
+      return
     }
 
     const canvas = canvasRef.current
@@ -148,8 +152,9 @@ export default function AnimatedBackground() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed inset-0 pointer-events-none z-0"
+      className="fixed inset-0 pointer-events-none z-0 hidden md:block"
       style={{ background: 'transparent' }}
+      aria-hidden
     />
   )
 }

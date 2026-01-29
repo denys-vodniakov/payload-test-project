@@ -1,18 +1,19 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import type { Page } from '@/payload-types'
 import { CMSLink } from '@/components/Link'
 import RichText from '@/components/RichText'
 import dynamic from 'next/dynamic'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
+import GlassCard from '@/components/GlassCard'
+import GradientText from '@/components/GradientText'
+import { Trophy, Zap, Clock, Users, BookOpen, Star } from 'lucide-react'
 
 const AnimatedBackground = dynamic(
   () => import('@/components/AnimatedBackground'),
   { ssr: false }
 )
-import GlassCard from '@/components/GlassCard'
-import GradientText from '@/components/GradientText'
-import { Trophy, Zap, Clock, Users, BookOpen, Star } from 'lucide-react'
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   trophy: Trophy,
@@ -30,9 +31,15 @@ export const ModernHero: React.FC<Page['hero']> = ({
   showStats,
   stats,
 }) => {
+  const isMobile = useMediaQuery('(max-width: 768px)')
+  const [canShowBackground, setCanShowBackground] = useState(false)
+  useEffect(() => {
+    setCanShowBackground(window.innerWidth >= 768)
+  }, [])
   return (
     <div className="bg-gradient-to-br from-background via-background/95 to-background/90 relative transition-colors duration-300">
-      <AnimatedBackground />
+      {/* AnimatedBackground only on desktop - chunk not loaded on mobile */}
+      {canShowBackground && <AnimatedBackground />}
 
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 px-4 z-10">
@@ -46,7 +53,7 @@ export const ModernHero: React.FC<Page['hero']> = ({
                   <GradientText
                     className="block [&_*]:bg-clip-text [&_*]:text-transparent"
                     gradient="blue-purple"
-                    animate={true}
+                    animate={!isMobile}
                   >
                     <RichText data={richText} enableGutter={false} enableProse={false} />
                   </GradientText>
@@ -71,10 +78,10 @@ export const ModernHero: React.FC<Page['hero']> = ({
             </div>
           )}
 
-          {/* Stats */}
+          {/* Stats - content-visibility on mobile to improve LCP */}
           {showStats && stats && stats.length > 0 && (
             <div
-              className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto animate-in fade-in slide-in-up"
+              className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto animate-in fade-in slide-in-up content-visibility-auto-mobile"
               style={{ animationDelay: '0.4s' }}
             >
               {stats.map((stat, index) => {
@@ -91,8 +98,8 @@ export const ModernHero: React.FC<Page['hero']> = ({
                 return (
                   <GlassCard
                     key={stat.id || index}
-                    className="p-6 shadow-lg animate-float"
-                    style={{ animationDelay: `${index * 0.5}s` }}
+                    className="p-6 shadow-lg md:animate-float"
+                    style={!isMobile ? { animationDelay: `${index * 0.5}s` } : undefined}
                   >
                     <IconComponent
                       className={`h-12 w-12 ${iconColors[index % iconColors.length]} mx-auto mb-4`}

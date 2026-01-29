@@ -28,14 +28,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <InitTheme />
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
         <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
-        {/* Preload critical fonts for better LCP */}
-        <link
-          rel="preload"
-          href="/_next/static/media/a34f9d1faa5f3315-s.p.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
         {/* DNS Prefetch for external resources */}
         <link rel="dns-prefetch" href="//vercel.live" />
         <link rel="dns-prefetch" href="//va.vercel-scripts.com" />
