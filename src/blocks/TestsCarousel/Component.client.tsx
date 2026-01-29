@@ -186,14 +186,14 @@ export const TestsCarouselClient: React.FC<TestsCarouselClientProps> = ({
                     }
                   >
                     <Card
-                      className="group h-full bg-card/80 backdrop-blur-sm border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 relative overflow-hidden"
+                      className="group h-full bg-card/80 backdrop-blur-sm border-2 transition-all duration-300 relative overflow-hidden md:hover:border-primary/50 md:hover:shadow-2xl md:hover:-translate-y-2"
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
-                      {/* Gradient overlay on hover */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:via-primary/10 group-hover:to-primary/5 transition-all duration-500 pointer-events-none" />
+                      {/* Gradient overlay on hover - desktop only */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/0 via-primary/0 to-primary/0 md:group-hover:from-primary/5 md:group-hover:via-primary/10 md:group-hover:to-primary/5 transition-all duration-500 pointer-events-none" />
 
-                      {/* Shine effect */}
-                      <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
+                      {/* Shine effect - desktop only */}
+                      <div className="absolute inset-0 -translate-x-full md:group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
 
                       <CardHeader className="relative z-10">
                         <div className="flex items-start justify-between mb-3 gap-2">
@@ -210,7 +210,7 @@ export const TestsCarouselClient: React.FC<TestsCarouselClientProps> = ({
                             {getCategoryLabel(test.category)}
                           </Badge>
                         </div>
-                        <CardTitle className="text-xl md:text-2xl group-hover:text-primary transition-colors duration-300 line-clamp-2">
+                        <CardTitle className="text-xl md:text-2xl md:group-hover:text-primary transition-colors duration-300 line-clamp-2">
                           {test.title}
                         </CardTitle>
                         {test.description && (
@@ -247,8 +247,8 @@ export const TestsCarouselClient: React.FC<TestsCarouselClientProps> = ({
                         </Button>
                       </CardContent>
 
-                      {/* Decorative corner element */}
-                      <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary/10 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      {/* Decorative corner element - desktop only */}
+                      <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-primary/10 to-transparent rounded-bl-full opacity-0 md:group-hover:opacity-100 transition-opacity duration-300" />
                     </Card>
                   </div>
                 )
