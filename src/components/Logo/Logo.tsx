@@ -231,21 +231,6 @@ export const Logo = (props: Props) => {
     'https://raw.githubusercontent.com/payloadcms/payload/main/packages/ui/src/assets/payload-logo-light.svg'
   const finalAlt = logoUrl ? logoAlt : 'Payload Logo'
 
-  // Debug logging (only in development)
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[Logo] Selected logo:', {
-        theme,
-        mounted,
-        isMobile,
-        logoUrl: finalUrl,
-        hasLight: !!logo?.light,
-        hasDark: !!logo?.dark,
-        hasMobile: !!logo?.mobile,
-      })
-    }
-  }, [theme, mounted, isMobile, finalUrl, logo])
-
   return (
     <>
       {/* Preload logo images for faster theme switching */}
@@ -276,11 +261,6 @@ export const Logo = (props: Props) => {
             console.error('[Logo] Failed to load image:', finalUrl, 'Falling back to default')
             target.dataset.fallback = 'true'
             target.src = defaultLogo
-          }
-        }}
-        onLoad={() => {
-          if (process.env.NODE_ENV === 'development') {
-            console.log('[Logo] Image loaded successfully:', finalUrl)
           }
         }}
       />

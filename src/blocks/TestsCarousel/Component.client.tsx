@@ -38,6 +38,11 @@ export const TestsCarouselClient: React.FC<TestsCarouselClientProps> = ({
     {
       align: 'start',
       slidesToScroll: 1,
+      containScroll: 'trimSnaps',
+      dragFree: false,
+      // Better touch handling
+      skipSnaps: false,
+      inViewThreshold: 0.7,
       breakpoints: {
         '(min-width: 1024px)': {
           slidesToScroll: Math.min(2, slidesToShow),
@@ -49,13 +54,23 @@ export const TestsCarouselClient: React.FC<TestsCarouselClientProps> = ({
 
   // Disable autoplay on mobile (touch devices)
   useEffect(() => {
-    if (!autoplay) return
-    if (!isDesktop) {
-      autoplayPlugin.stop?.()
-    } else {
-      autoplayPlugin.play?.()
+    if (!autoplay || !emblaApi) return
+    
+    try {
+      const plugins = emblaApi.plugins()
+      const autoplayInstance = plugins?.autoplay as { stop?: () => void; play?: () => void } | undefined
+      
+      if (!autoplayInstance) return
+      
+      if (!isDesktop) {
+        autoplayInstance.stop?.()
+      } else {
+        autoplayInstance.play?.()
+      }
+    } catch (e) {
+      // Ignore errors during initialization
     }
-  }, [isDesktop, autoplay, autoplayPlugin])
+  }, [isDesktop, autoplay, emblaApi])
 
   const [prevBtnDisabled, setPrevBtnDisabled] = useState(true)
   const [nextBtnDisabled, setNextBtnDisabled] = useState(true)

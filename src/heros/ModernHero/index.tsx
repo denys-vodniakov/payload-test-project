@@ -38,7 +38,8 @@ export const ModernHero: React.FC<Page['hero']> = ({
       <section className="relative overflow-hidden py-20 px-4 z-10">
         <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/5" />
         <div className="relative max-w-7xl mx-auto text-center">
-          <div className="mb-8 animate-in fade-in slide-in-up">
+          {/* No animation delay on main content for better LCP */}
+          <div className="mb-8">
             {richText && (
               <div className="mb-6">
                 <div className="text-5xl md:text-7xl font-bold [&_.payload-richtext]:text-inherit [&_.payload-richtext]:font-inherit [&_.payload-richtext]:mb-0 [&_.payload-richtext_*]:text-inherit [&_.payload-richtext_*]:font-inherit">

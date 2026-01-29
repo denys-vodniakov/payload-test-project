@@ -95,13 +95,15 @@
   }
 }
 
-html {
-  opacity: 0;
+/* Prevent FOUC but don't block LCP - use CSS animation instead of JS-dependent opacity */
+html:not([data-theme]) {
+  /* Short fade-in if theme not set yet - max 100ms wait */
+  animation: theme-fade-in 0.1s ease-out forwards;
 }
 
-html[data-theme='dark'],
-html[data-theme='light'] {
-  opacity: initial;
+@keyframes theme-fade-in {
+  from { opacity: 0.95; }
+  to { opacity: 1; }
 }
 
 /* Custom animations */
