@@ -4,7 +4,12 @@ import React from 'react'
 import type { Page } from '@/payload-types'
 import { CMSLink } from '@/components/Link'
 import RichText from '@/components/RichText'
-import AnimatedBackground from '@/components/AnimatedBackground'
+import dynamic from 'next/dynamic'
+
+const AnimatedBackground = dynamic(
+  () => import('@/components/AnimatedBackground'),
+  { ssr: false }
+)
 import GlassCard from '@/components/GlassCard'
 import GradientText from '@/components/GradientText'
 import { Trophy, Zap, Clock, Users, BookOpen, Star } from 'lucide-react'

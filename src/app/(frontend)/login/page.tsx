@@ -9,7 +9,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ArrowLeft, Eye, EyeOff, LogIn, Mail, Lock, Moon, Sun } from 'lucide-react'
-import AnimatedBackground from '@/components/AnimatedBackground'
+import dynamic from 'next/dynamic'
+
+const AnimatedBackground = dynamic(
+  () => import('@/components/AnimatedBackground'),
+  { ssr: false }
+)
 import GlassCard from '@/components/GlassCard'
 import GradientText from '@/components/GradientText'
 import { useTheme } from '@/providers/Theme'

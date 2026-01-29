@@ -8,7 +8,12 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { LogIn, UserPlus, ArrowLeft } from 'lucide-react'
-import AnimatedBackground from '@/components/AnimatedBackground'
+import dynamic from 'next/dynamic'
+
+const AnimatedBackground = dynamic(
+  () => import('@/components/AnimatedBackground'),
+  { ssr: false }
+)
 import GlassCard from '@/components/GlassCard'
 import GradientText from '@/components/GradientText'
 

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,7 +21,12 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import AnimatedBackground from '@/components/AnimatedBackground'
+import dynamic from 'next/dynamic'
+
+const AnimatedBackground = dynamic(
+  () => import('@/components/AnimatedBackground'),
+  { ssr: false }
+)
 import GlassCard from '@/components/GlassCard'
 import GradientText from '@/components/GradientText'
 
@@ -135,10 +141,12 @@ export default function ProfilePage() {
                       onClick={handleAvatarClick}
                     >
                       {getAvatarUrl() ? (
-                        <img
+                        <Image
                           src={getAvatarUrl()!}
                           alt={user?.name || 'Avatar'}
-                          className="w-full h-full object-cover"
+                          fill
+                          sizes="128px"
+                          className="object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-white text-4xl font-bold">

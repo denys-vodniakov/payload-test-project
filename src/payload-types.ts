@@ -898,6 +898,31 @@ export interface Test {
    * Percentage for passing the test
    */
   passingScore?: number | null;
+  /**
+   * Search engine optimization settings
+   */
+  meta?: {
+    /**
+     * Custom title for search engines (defaults to test title if empty)
+     */
+    title?: string | null;
+    /**
+     * Description for search engines (max 160 characters recommended)
+     */
+    description?: string | null;
+    /**
+     * Comma-separated keywords for SEO
+     */
+    keywords?: string | null;
+    /**
+     * Image for social media sharing (OpenGraph/Twitter)
+     */
+    image?: (number | null) | Media;
+    /**
+     * Prevent search engines from indexing this test
+     */
+    noIndex?: boolean | null;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -1924,6 +1949,15 @@ export interface TestsSelect<T extends boolean = true> {
   questions?: T;
   isActive?: T;
   passingScore?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        keywords?: T;
+        image?: T;
+        noIndex?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

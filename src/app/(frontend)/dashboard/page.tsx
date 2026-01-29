@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -24,7 +25,12 @@ import {
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import AnimatedBackground from '@/components/AnimatedBackground'
+import dynamic from 'next/dynamic'
+
+const AnimatedBackground = dynamic(
+  () => import('@/components/AnimatedBackground'),
+  { ssr: false }
+)
 import GlassCard from '@/components/GlassCard'
 import GradientText from '@/components/GradientText'
 import RichText from '@/components/RichText'
@@ -264,12 +270,14 @@ export default function DashboardPage() {
           {/* Header */}
           <div className="mb-8 flex items-center gap-4">
             {/* User Avatar */}
-            <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0">
+            <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0 relative">
               {user?.avatar && typeof user.avatar === 'object' && 'url' in user.avatar ? (
-                <img
+                <Image
                   src={user.avatar.url as string}
                   alt={user?.name || 'Avatar'}
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="64px"
+                  className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white text-2xl font-bold">
