@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 
 import type { Header as HeaderType } from '@/payload-types'
@@ -93,12 +94,14 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
               onClick={() => setUserMenuOpen(!userMenuOpen)}
               className="flex items-center gap-2 p-1 rounded-full hover:bg-muted/50 transition-colors"
             >
-              <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center relative">
                 {getAvatarUrl() ? (
-                  <img
+                  <Image
                     src={getAvatarUrl()!}
                     alt={user?.name || 'Avatar'}
-                    className="w-full h-full object-cover"
+                    fill
+                    sizes="36px"
+                    className="object-cover"
                   />
                 ) : (
                   <span className="text-white text-sm font-medium">{getUserInitial()}</span>
@@ -212,12 +215,14 @@ export const HeaderNav: React.FC<{ data: HeaderType }> = ({ data }) => {
             {isAuthenticated && user && (
               <div className="p-4 border-b border-border">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0 relative">
                     {getAvatarUrl() ? (
-                      <img
+                      <Image
                         src={getAvatarUrl()!}
                         alt={user?.name || 'Avatar'}
-                        className="w-full h-full object-cover"
+                        fill
+                        sizes="48px"
+                        className="object-cover"
                       />
                     ) : (
                       <span className="text-white text-lg font-medium">{getUserInitial()}</span>

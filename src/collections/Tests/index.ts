@@ -91,6 +91,59 @@ export const Tests: CollectionConfig = {
         description: 'Percentage for passing the test',
       },
     },
+    // SEO Meta fields
+    {
+      name: 'meta',
+      type: 'group',
+      label: 'SEO & Meta',
+      admin: {
+        description: 'Search engine optimization settings',
+      },
+      fields: [
+        {
+          name: 'title',
+          type: 'text',
+          label: 'Meta Title',
+          admin: {
+            description: 'Custom title for search engines (defaults to test title if empty)',
+          },
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+          label: 'Meta Description',
+          admin: {
+            description: 'Description for search engines (max 160 characters recommended)',
+          },
+        },
+        {
+          name: 'keywords',
+          type: 'text',
+          label: 'Keywords',
+          admin: {
+            description: 'Comma-separated keywords for SEO',
+          },
+        },
+        {
+          name: 'image',
+          type: 'upload',
+          relationTo: 'media',
+          label: 'Social Share Image',
+          admin: {
+            description: 'Image for social media sharing (OpenGraph/Twitter)',
+          },
+        },
+        {
+          name: 'noIndex',
+          type: 'checkbox',
+          label: 'No Index',
+          defaultValue: false,
+          admin: {
+            description: 'Prevent search engines from indexing this test',
+          },
+        },
+      ],
+    },
   ],
   hooks: {
     beforeValidate: [
