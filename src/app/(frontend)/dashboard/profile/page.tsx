@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,7 +25,6 @@ import GlassCard from '@/components/GlassCard'
 import GradientText from '@/components/GradientText'
 
 export default function ProfilePage() {
-  const router = useRouter()
   const { user, updateProfile, updateAvatar, refreshUser } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -110,17 +108,16 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto px-4 py-8 relative z-10">
           {/* Header */}
           <div className="mb-8">
-            <Button
-              asChild
-              variant="ghost"
-              className="mb-4 text-muted-foreground hover:text-foreground"
-            >
-              <Link href="/dashboard">
+            <nav className="mb-4">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Dashboard
               </Link>
-            </Button>
-            <GradientText className="text-4xl font-bold mb-2">Profile Settings</GradientText>
+            </nav>
+            <GradientText className="text-4xl font-bold mb-2 block">Profile Settings</GradientText>
             <p className="text-muted-foreground">Manage your account information</p>
           </div>
 

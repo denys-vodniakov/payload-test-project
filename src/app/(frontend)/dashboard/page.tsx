@@ -9,28 +9,21 @@ import {
   Trophy,
   BookOpen,
   Clock,
-  TrendingUp,
+
   RefreshCw,
   BarChart3,
   Calendar,
   Target,
   Award,
-  LogOut,
-  Moon,
-  Sun,
   Sparkles,
   Zap,
   ChevronDown,
-  ChevronUp,
   CheckCircle2,
   XCircle,
-  Settings,
-  User,
 } from 'lucide-react'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import ProtectedRoute from '@/components/ProtectedRoute'
-import { useTheme } from '@/providers/Theme'
 import AnimatedBackground from '@/components/AnimatedBackground'
 import GlassCard from '@/components/GlassCard'
 import GradientText from '@/components/GradientText'
@@ -88,8 +81,7 @@ interface Stats {
 }
 
 export default function DashboardPage() {
-  const { user, logout, token, loading: authLoading } = useAuth()
-  const { theme, setTheme } = useTheme()
+  const { user, token, loading: authLoading } = useAuth()
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
   const [expandedResults, setExpandedResults] = useState<Set<string>>(new Set())
@@ -270,40 +262,26 @@ export default function DashboardPage() {
 
         <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
           {/* Header */}
-          <div className="mb-8 flex justify-between items-center">
-            <div className="flex items-center gap-4">
-              {/* User Avatar */}
-              <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0">
-                {user?.avatar && typeof user.avatar === 'object' && 'url' in user.avatar ? (
-                  <img
-                    src={user.avatar.url as string}
-                    alt={user?.name || 'Avatar'}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-white text-2xl font-bold">
-                    {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}
-                  </div>
-                )}
-              </div>
-              <div>
-                <GradientText className="text-4xl font-bold mb-2">My Dashboard</GradientText>
-                <p className="text-xl text-muted-foreground">
-                  Welcome back, <span className="font-semibold text-primary">{user?.name}</span>! 👋
-                </p>
-              </div>
+          <div className="mb-8 flex items-center gap-4">
+            {/* User Avatar */}
+            <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0">
+              {user?.avatar && typeof user.avatar === 'object' && 'url' in user.avatar ? (
+                <img
+                  src={user.avatar.url as string}
+                  alt={user?.name || 'Avatar'}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white text-2xl font-bold">
+                  {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || '?'}
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-2">
-              <Button asChild variant="outline" className="flex items-center gap-2">
-                <Link href="/dashboard/profile">
-                  <Settings className="h-4 w-4" />
-                  Profile
-                </Link>
-              </Button>
-              <Button onClick={logout} variant="outline" className="flex items-center gap-2">
-                <LogOut className="h-4 w-4" />
-                Logout
-              </Button>
+            <div>
+              <GradientText className="text-4xl font-bold mb-2">My Dashboard</GradientText>
+              <p className="text-xl text-muted-foreground">
+                Welcome back, <span className="font-semibold text-primary">{user?.name}</span>! 👋
+              </p>
             </div>
           </div>
 
