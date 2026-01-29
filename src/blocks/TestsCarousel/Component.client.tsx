@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import useEmblaCarousel from 'embla-carousel-react'
 import Autoplay from 'embla-carousel-autoplay'
 import { ArrowLeft, ArrowRight, BookOpen, Clock, Zap, Trophy } from 'lucide-react'
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import GradientText from '@/components/GradientText'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import type { Test } from '@/payload-types'
 
 interface TestsCarouselClientProps {
@@ -28,6 +29,11 @@ export const TestsCarouselClient: React.FC<TestsCarouselClientProps> = ({
   autoplay,
   autoplaySpeed,
 }) => {
+  const isDesktop = useMediaQuery('(min-width: 768px)')
+  const autoplayPlugin = useMemo(
+    () => Autoplay({ delay: autoplaySpeed, stopOnInteraction: false }),
+    [autoplaySpeed],
+  )
   const [emblaRef, emblaApi] = useEmblaCarousel(
     {
       align: 'start',
@@ -38,8 +44,18 @@ export const TestsCarouselClient: React.FC<TestsCarouselClientProps> = ({
         },
       },
     },
-    autoplay ? [Autoplay({ delay: autoplaySpeed, stopOnInteraction: false })] : [],
+    autoplay ? [autoplayPlugin] : [],
   )
+
+  // Disable autoplay on mobile (touch devices)
+  useEffect(() => {
+    if (!autoplay) return
+    if (!isDesktop) {
+      autoplayPlugin.stop?.()
+    } else {
+      autoplayPlugin.play?.()
+    }
+  }, [isDesktop, autoplay, autoplayPlugin])
 
   const [prevBtnDisabled, setPrevBtnDisabled] = useState(true)
   const [nextBtnDisabled, setNextBtnDisabled] = useState(true)
