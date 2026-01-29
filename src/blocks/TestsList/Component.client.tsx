@@ -778,7 +778,7 @@ export const TestsListClient: React.FC<TestsListClientProps> = ({
                 {loadingMore && <Loader2 className={cn("h-8 w-8 animate-spin", isDark ? "text-blue-500" : "text-blue-600")} />}
                 {!hasNextPage && tests.length > 0 && (
                   <p className={cn("text-sm", isDark ? "text-gray-500" : "text-gray-400")}>
-                    You've reached the end
+                    You&apos;ve reached the end
                   </p>
                 )}
               </div>
