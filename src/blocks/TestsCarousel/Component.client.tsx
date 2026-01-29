@@ -106,9 +106,9 @@ export const TestsCarouselClient: React.FC<TestsCarouselClientProps> = ({
       case 'css-html':
         return 'CSS/HTML'
       case 'general':
-        return 'Общие вопросы'
+        return 'General'
       default:
-        return 'Смешанный'
+        return 'Mixed'
     }
   }
 
@@ -136,7 +136,7 @@ export const TestsCarouselClient: React.FC<TestsCarouselClientProps> = ({
           <p className="text-xl text-muted-foreground dark:text-muted-foreground/90 mb-8 transition-colors duration-300 font-medium">
             {subtitle}
           </p>
-          <p className="text-muted-foreground">Нет доступных тестов</p>
+          <p className="text-muted-foreground">No tests available</p>
         </div>
       </section>
     )
@@ -224,12 +224,12 @@ export const TestsCarouselClient: React.FC<TestsCarouselClientProps> = ({
                         <div className="flex items-center justify-between text-sm text-muted-foreground mb-6">
                           <span className="flex items-center gap-1.5">
                             <BookOpen className="h-4 w-4" />
-                            <span className="font-medium">{questionsCount} вопросов</span>
+                            <span className="font-medium">{questionsCount} questions</span>
                           </span>
                           {test.timeLimit && (
                             <span className="flex items-center gap-1.5">
                               <Clock className="h-4 w-4" />
-                              <span className="font-medium">{test.timeLimit} мин</span>
+                              <span className="font-medium">{test.timeLimit} min</span>
                             </span>
                           )}
                         </div>
@@ -240,7 +240,7 @@ export const TestsCarouselClient: React.FC<TestsCarouselClientProps> = ({
                         >
                           <Link href={`/test/${testId}`}>
                             <span className="flex items-center justify-center gap-2">
-                              Начать тест
+                              Start Test
                               <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                             </span>
                           </Link>
@@ -261,7 +261,7 @@ export const TestsCarouselClient: React.FC<TestsCarouselClientProps> = ({
             {/* Left: Stats text */}
             <div className="flex items-center gap-2 text-muted-foreground order-1 sm:order-none">
               <Trophy className="h-5 w-5 text-yellow-500" />
-              <span className="text-sm font-medium">{tests.length} тестов доступно</span>
+              <span className="text-sm font-medium">{tests.length} tests available</span>
             </div>
 
             {/* Center: Navigation buttons */}

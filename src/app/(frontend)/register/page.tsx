@@ -33,7 +33,7 @@ export default function RegisterPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
-    // Очищаем ошибку при изменении поля
+    // Clear error when field changes
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }))
     }
@@ -257,7 +257,7 @@ export default function RegisterPage() {
                   <Link href="/terms" className="text-blue-600 hover:text-blue-800 underline">
                     terms of use
                   </Link>{' '}
-                  и{' '}
+                  and{' '}
                   <Link href="/privacy" className="text-blue-600 hover:text-blue-800 underline">
                     privacy policy
                   </Link>

@@ -23,7 +23,7 @@ export const TestsCarouselBlock: React.FC<TestsCarouselBlockProps> = async ({
 
   try {
     if (testSelectionMode === 'manual' && manualTests && manualTests.length > 0) {
-      // Ручной выбор тестов
+      // Manual test selection
       const testIds = manualTests
         .map((test) => (typeof test === 'object' && test !== null ? test.id : test))
         .filter(Boolean)
@@ -44,14 +44,14 @@ export const TestsCarouselBlock: React.FC<TestsCarouselBlockProps> = async ({
         })
         tests = result.docs || []
 
-        // Сохраняем порядок из ручного выбора
+        // Preserve order from manual selection
         const testMap = new Map(tests.map((test) => [test.id, test]))
         tests = testIds
           .map((id) => testMap.get(id))
           .filter(Boolean) as any[]
       }
     } else {
-      // Автоматический выбор тестов
+      // Automatic test selection
       const where: any = {
         isActive: {
           equals: true,
@@ -70,13 +70,13 @@ export const TestsCarouselBlock: React.FC<TestsCarouselBlockProps> = async ({
         }
       }
 
-      // Определяем сортировку
+      // Determine sorting
       let sort: string | undefined
       if (sortOrder) {
         const [field, direction] = sortOrder.split('-')
         sort = direction === 'asc' ? field : `-${field}`
       } else {
-        sort = '-createdAt' // По умолчанию новые сначала
+        sort = '-createdAt' // Default: newest first
       }
 
       const result = await payload.find({

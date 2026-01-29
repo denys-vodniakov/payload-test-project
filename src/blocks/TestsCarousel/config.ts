@@ -10,7 +10,7 @@ export const TestsCarousel: Block = {
       required: true,
       defaultValue: 'Available Tests',
       admin: {
-        description: 'Заголовок секции карусели',
+        description: 'Carousel section title',
       },
     },
     {
@@ -19,7 +19,7 @@ export const TestsCarousel: Block = {
       required: true,
       defaultValue: "Choose a test for the technology you're interested in and test your knowledge",
       admin: {
-        description: 'Подзаголовок секции карусели',
+        description: 'Carousel section subtitle',
       },
     },
     {
@@ -29,24 +29,24 @@ export const TestsCarousel: Block = {
       defaultValue: 'latest',
       options: [
         {
-          label: 'Последние тесты (автоматически)',
+          label: 'Latest tests (automatic)',
           value: 'latest',
         },
         {
-          label: 'Ручной выбор тестов',
+          label: 'Manual selection',
           value: 'manual',
         },
         {
-          label: 'По категории',
+          label: 'By category',
           value: 'category',
         },
         {
-          label: 'По сложности',
+          label: 'By difficulty',
           value: 'difficulty',
         },
       ],
       admin: {
-        description: 'Режим выбора тестов для отображения',
+        description: 'Test selection mode for display',
       },
     },
     {
@@ -56,7 +56,7 @@ export const TestsCarousel: Block = {
       hasMany: true,
       admin: {
         condition: (data) => data.testSelectionMode === 'manual',
-        description: 'Выберите тесты для отображения в карусели',
+        description: 'Select tests to display in the carousel',
       },
     },
     {
@@ -73,7 +73,7 @@ export const TestsCarousel: Block = {
       ],
       admin: {
         condition: (data) => data.testSelectionMode === 'category',
-        description: 'Фильтр по категории',
+        description: 'Filter by category',
       },
     },
     {
@@ -87,7 +87,7 @@ export const TestsCarousel: Block = {
       ],
       admin: {
         condition: (data) => data.testSelectionMode === 'difficulty',
-        description: 'Фильтр по сложности',
+        description: 'Filter by difficulty',
       },
     },
     {
@@ -97,32 +97,32 @@ export const TestsCarousel: Block = {
       defaultValue: 'createdAt-desc',
       options: [
         {
-          label: 'Сначала новые (по дате создания)',
+          label: 'Newest first (by creation date)',
           value: 'createdAt-desc',
         },
         {
-          label: 'Сначала старые (по дате создания)',
+          label: 'Oldest first (by creation date)',
           value: 'createdAt-asc',
         },
         {
-          label: 'По названию (А-Я)',
+          label: 'By title (A-Z)',
           value: 'title-asc',
         },
         {
-          label: 'По названию (Я-А)',
+          label: 'By title (Z-A)',
           value: 'title-desc',
         },
         {
-          label: 'По дате обновления (новые)',
+          label: 'By update date (newest)',
           value: 'updatedAt-desc',
         },
         {
-          label: 'По дате обновления (старые)',
+          label: 'By update date (oldest)',
           value: 'updatedAt-asc',
         },
       ],
       admin: {
-        description: 'Порядок сортировки тестов',
+        description: 'Test sorting order',
       },
     },
     {
@@ -132,7 +132,7 @@ export const TestsCarousel: Block = {
       min: 1,
       max: 50,
       admin: {
-        description: 'Максимальное количество тестов для отображения',
+        description: 'Maximum number of tests to display',
       },
     },
     {
@@ -142,7 +142,7 @@ export const TestsCarousel: Block = {
       min: 1,
       max: 5,
       admin: {
-        description: 'Количество видимых слайдов одновременно (для десктопа)',
+        description: 'Number of visible slides at once (for desktop)',
       },
     },
     {
@@ -150,7 +150,7 @@ export const TestsCarousel: Block = {
       type: 'checkbox',
       defaultValue: true,
       admin: {
-        description: 'Автоматическая прокрутка карусели',
+        description: 'Enable automatic carousel scrolling',
       },
     },
     {
@@ -161,7 +161,7 @@ export const TestsCarousel: Block = {
       max: 10000,
       admin: {
         condition: (data) => data.autoplay === true,
-        description: 'Скорость автопрокрутки в миллисекундах (рекомендуется кратно 500)',
+        description: 'Autoplay speed in milliseconds (recommended multiples of 500)',
       },
     },
   ],

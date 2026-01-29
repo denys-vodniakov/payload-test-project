@@ -12,7 +12,7 @@ export const Footer: GlobalConfig = {
     {
       name: 'logo',
       type: 'group',
-      label: 'Логотип',
+      label: 'Logo',
       fields: [
         {
           name: 'light',

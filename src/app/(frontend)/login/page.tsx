@@ -31,7 +31,7 @@ export default function LoginPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
-    // Очищаем ошибку при изменении поля
+    // Clear error when field changes
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }))
     }
@@ -41,13 +41,13 @@ export default function LoginPage() {
     const newErrors: Record<string, string> = {}
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email обязателен для заполнения'
+      newErrors.email = 'Email is required'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Введите корректный email'
+      newErrors.email = 'Enter a valid email'
     }
 
     if (!formData.password) {
-      newErrors.password = 'Пароль обязателен для заполнения'
+      newErrors.password = 'Password is required'
     }
 
     setErrors(newErrors)

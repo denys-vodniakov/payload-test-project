@@ -15,16 +15,16 @@ export const WhyChooseUs: Block = {
       name: 'title',
       type: 'text',
       required: true,
-      defaultValue: 'Почему выбирают нас?',
+      defaultValue: 'Why Choose Us?',
       admin: {
-        description: 'Заголовок секции',
+        description: 'Section title',
       },
     },
     {
       name: 'subtitle',
       type: 'text',
       admin: {
-        description: 'Подзаголовок секции (опционально)',
+        description: 'Section subtitle (optional)',
       },
     },
     {
@@ -41,7 +41,7 @@ export const WhyChooseUs: Block = {
         },
       }),
       admin: {
-        description: 'Описание секции (опционально)',
+        description: 'Section description (optional)',
       },
     },
     {
@@ -56,7 +56,7 @@ export const WhyChooseUs: Block = {
           type: 'text',
           required: true,
           admin: {
-            description: 'Название преимущества',
+            description: 'Feature title',
           },
         },
         {
@@ -64,7 +64,7 @@ export const WhyChooseUs: Block = {
           type: 'textarea',
           required: true,
           admin: {
-            description: 'Описание преимущества',
+            description: 'Feature description',
           },
         },
         {
@@ -72,24 +72,24 @@ export const WhyChooseUs: Block = {
           type: 'select',
           defaultValue: 'zap',
           options: [
-            { label: '⚡ Zap (Молния)', value: 'zap' },
-            { label: '🚀 Rocket (Ракета)', value: 'rocket' },
-            { label: '🎯 Target (Цель)', value: 'target' },
-            { label: '💎 Diamond (Алмаз)', value: 'diamond' },
-            { label: '⭐ Star (Звезда)', value: 'star' },
-            { label: '🔥 Fire (Огонь)', value: 'fire' },
-            { label: '📚 Book (Книга)', value: 'book' },
-            { label: '🏆 Trophy (Трофей)', value: 'trophy' },
-            { label: '⚙️ Settings (Настройки)', value: 'settings' },
-            { label: '💡 Lightbulb (Лампочка)', value: 'lightbulb' },
-            { label: '🎨 Palette (Палитра)', value: 'palette' },
-            { label: '🔒 Lock (Замок)', value: 'lock' },
-            { label: '📱 Smartphone (Телефон)', value: 'smartphone' },
-            { label: '🌐 Globe (Глобус)', value: 'globe' },
-            { label: '👥 Users (Пользователи)', value: 'users' },
+            { label: '⚡ Zap', value: 'zap' },
+            { label: '🚀 Rocket', value: 'rocket' },
+            { label: '🎯 Target', value: 'target' },
+            { label: '💎 Diamond', value: 'diamond' },
+            { label: '⭐ Star', value: 'star' },
+            { label: '🔥 Fire', value: 'fire' },
+            { label: '📚 Book', value: 'book' },
+            { label: '🏆 Trophy', value: 'trophy' },
+            { label: '⚙️ Settings', value: 'settings' },
+            { label: '💡 Lightbulb', value: 'lightbulb' },
+            { label: '🎨 Palette', value: 'palette' },
+            { label: '🔒 Lock', value: 'lock' },
+            { label: '📱 Smartphone', value: 'smartphone' },
+            { label: '🌐 Globe', value: 'globe' },
+            { label: '👥 Users', value: 'users' },
           ],
           admin: {
-            description: 'Иконка для преимущества',
+            description: 'Icon for the feature',
           },
         },
         {
@@ -97,22 +97,22 @@ export const WhyChooseUs: Block = {
           type: 'select',
           defaultValue: 'blue',
           options: [
-            { label: 'Синий → Фиолетовый', value: 'blue' },
-            { label: 'Зеленый → Синий', value: 'green' },
-            { label: 'Фиолетовый → Розовый', value: 'purple' },
-            { label: 'Оранжевый → Красный', value: 'orange' },
-            { label: 'Розовый → Фиолетовый', value: 'pink' },
-            { label: 'Желтый → Оранжевый', value: 'yellow' },
-            { label: 'Бирюзовый → Синий', value: 'cyan' },
-            { label: 'Красный → Розовый', value: 'red' },
+            { label: 'Blue → Purple', value: 'blue' },
+            { label: 'Green → Blue', value: 'green' },
+            { label: 'Purple → Pink', value: 'purple' },
+            { label: 'Orange → Red', value: 'orange' },
+            { label: 'Pink → Purple', value: 'pink' },
+            { label: 'Yellow → Orange', value: 'yellow' },
+            { label: 'Cyan → Blue', value: 'cyan' },
+            { label: 'Red → Pink', value: 'red' },
           ],
           admin: {
-            description: 'Цвет градиента для карточки',
+            description: 'Gradient color for the card',
           },
         },
       ],
       admin: {
-        description: 'Список преимуществ',
+        description: 'List of features',
       },
     },
     {
@@ -120,12 +120,12 @@ export const WhyChooseUs: Block = {
       type: 'select',
       defaultValue: 'grid',
       options: [
-        { label: 'Сетка (Grid)', value: 'grid' },
-        { label: 'Список (List)', value: 'list' },
-        { label: 'Карусель (Carousel)', value: 'carousel' },
+        { label: 'Grid', value: 'grid' },
+        { label: 'List', value: 'list' },
+        { label: 'Carousel', value: 'carousel' },
       ],
       admin: {
-        description: 'Способ отображения преимуществ',
+        description: 'Display mode for features',
       },
     },
     {
@@ -136,7 +136,7 @@ export const WhyChooseUs: Block = {
       max: 6,
       admin: {
         condition: (data) => data.layout === 'grid',
-        description: 'Количество колонок в сетке',
+        description: 'Number of columns in the grid',
       },
     },
   ],

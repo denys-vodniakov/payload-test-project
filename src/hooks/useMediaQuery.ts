@@ -5,9 +5,9 @@ import { useEffect, useState } from 'react'
 import canUseDOM from '@/utilities/canUseDOM'
 
 /**
- * Хук для определения соответствия медиа-запросу
- * @param query - CSS медиа-запрос (например, '(max-width: 768px)')
- * @returns boolean - соответствует ли текущее состояние экрана запросу
+ * Hook to determine if a media query matches
+ * @param query - CSS media query (e.g., '(max-width: 768px)')
+ * @returns boolean - whether the current screen state matches the query
  */
 export function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(false)
@@ -18,24 +18,24 @@ export function useMediaQuery(query: string): boolean {
     }
 
     const mediaQuery = window.matchMedia(query)
-    
-    // Устанавливаем начальное значение
+
+    // Set initial value
     setMatches(mediaQuery.matches)
 
-    // Создаем обработчик изменений
+    // Create change handler
     const handler = (event: MediaQueryListEvent) => {
       setMatches(event.matches)
     }
 
-    // Подписываемся на изменения
+    // Subscribe to changes
     if (mediaQuery.addEventListener) {
       mediaQuery.addEventListener('change', handler)
     } else {
-      // Fallback для старых браузеров
+      // Fallback for older browsers
       mediaQuery.addListener(handler)
     }
 
-    // Очистка подписки
+    // Cleanup subscription
     return () => {
       if (mediaQuery.removeEventListener) {
         mediaQuery.removeEventListener('change', handler)

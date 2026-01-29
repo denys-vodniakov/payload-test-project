@@ -2,15 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
-    // Создаем ответ
+    // Create response
     const response = NextResponse.json({ message: 'Successfully logged out' })
 
-    // Очищаем куку payload-token
+    // Clear payload-token cookie
     response.cookies.set('payload-token', '', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 0, // Удаляем куку
+      maxAge: 0, // Delete cookie
       path: '/',
     })
 

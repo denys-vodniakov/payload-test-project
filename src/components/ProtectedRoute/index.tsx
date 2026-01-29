@@ -23,7 +23,7 @@ export default function ProtectedRoute({ children, fallback }: ProtectedRoutePro
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      // Не перенаправляем автоматически, показываем fallback
+      // Don't redirect automatically, show fallback
     }
   }, [isAuthenticated, loading])
 

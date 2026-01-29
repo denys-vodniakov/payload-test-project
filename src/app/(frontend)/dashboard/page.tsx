@@ -106,7 +106,7 @@ export default function DashboardPage() {
 
   const fetchStats = async () => {
     try {
-      // Проверяем токен из localStorage или из AuthContext
+      // Check token from localStorage or from AuthContext
       const localToken = localStorage.getItem('authToken')
       const authToken = localToken || (token && token !== 'cookie-auth' ? token : null)
 
@@ -174,9 +174,9 @@ export default function DashboardPage() {
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
     if (hours > 0) {
-      return `${hours}ч ${minutes}м`
+      return `${hours}h ${minutes}m`
     }
-    return `${minutes}м`
+    return `${minutes}m`
   }
 
   const formatDate = (dateString: string) => {

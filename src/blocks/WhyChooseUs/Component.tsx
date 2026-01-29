@@ -31,7 +31,7 @@ export const WhyChooseUsBlock: React.FC<WhyChooseUsBlockProps> = ({
 
   return (
     <WhyChooseUsClient
-      title={title || 'Почему выбирают нас?'}
+      title={title || 'Why Choose Us?'}
       subtitle={subtitle}
       description={description}
       features={transformedFeatures}

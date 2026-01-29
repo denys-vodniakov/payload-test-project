@@ -172,7 +172,7 @@ export interface Page {
       [k: string]: unknown;
     } | null;
     /**
-     * Подзаголовок для hero секции
+     * Subtitle for hero section
      */
     subtitle?: string | null;
     links?:
@@ -201,20 +201,20 @@ export interface Page {
       | null;
     media?: (number | null) | Media;
     /**
-     * Показать статистику
+     * Show statistics
      */
     showStats?: boolean | null;
     /**
-     * Статистика для отображения
+     * Statistics to display
      */
     stats?:
       | {
           /**
-           * Значение (например: "1000+")
+           * Value (e.g., "1000+")
            */
           value: string;
           /**
-           * Подпись (например: "Questions in database")
+           * Label (e.g., "Questions in database")
            */
           label: string;
           icon?: ('trophy' | 'zap' | 'clock' | 'users' | 'book' | 'star') | null;
@@ -812,47 +812,47 @@ export interface Form {
  */
 export interface TestsCarouselBlock {
   /**
-   * Заголовок секции карусели
+   * Carousel section title
    */
   title: string;
   /**
-   * Подзаголовок секции карусели
+   * Carousel section subtitle
    */
   subtitle: string;
   /**
-   * Режим выбора тестов для отображения
+   * Test selection mode for display
    */
   testSelectionMode: 'latest' | 'manual' | 'category' | 'difficulty';
   /**
-   * Выберите тесты для отображения в карусели
+   * Select tests to display in the carousel
    */
   manualTests?: (number | Test)[] | null;
   /**
-   * Фильтр по категории
+   * Filter by category
    */
   categoryFilter?: ('react' | 'nextjs' | 'javascript' | 'typescript' | 'css-html' | 'general' | 'mixed') | null;
   /**
-   * Фильтр по сложности
+   * Filter by difficulty
    */
   difficultyFilter?: ('easy' | 'medium' | 'hard' | 'mixed') | null;
   /**
-   * Порядок сортировки тестов
+   * Test sorting order
    */
   sortOrder: 'createdAt-desc' | 'createdAt-asc' | 'title-asc' | 'title-desc' | 'updatedAt-desc' | 'updatedAt-asc';
   /**
-   * Максимальное количество тестов для отображения
+   * Maximum number of tests to display
    */
   limit?: number | null;
   /**
-   * Количество видимых слайдов одновременно (для десктопа)
+   * Number of visible slides at once (for desktop)
    */
   slidesToShow?: number | null;
   /**
-   * Автоматическая прокрутка карусели
+   * Enable automatic carousel scrolling
    */
   autoplay?: boolean | null;
   /**
-   * Скорость автопрокрутки в миллисекундах (рекомендуется кратно 500)
+   * Autoplay speed in milliseconds (recommended multiples of 500)
    */
   autoplaySpeed?: number | null;
   id?: string | null;
@@ -1007,15 +1007,15 @@ export interface Question {
  */
 export interface WhyChooseUsBlock {
   /**
-   * Заголовок секции
+   * Section title
    */
   title: string;
   /**
-   * Подзаголовок секции (опционально)
+   * Section subtitle (optional)
    */
   subtitle?: string | null;
   /**
-   * Описание секции (опционально)
+   * Section description (optional)
    */
   description?: {
     root: {
@@ -1033,19 +1033,19 @@ export interface WhyChooseUsBlock {
     [k: string]: unknown;
   } | null;
   /**
-   * Список преимуществ
+   * List of features
    */
   features: {
     /**
-     * Название преимущества
+     * Feature title
      */
     title: string;
     /**
-     * Описание преимущества
+     * Feature description
      */
     description: string;
     /**
-     * Иконка для преимущества
+     * Icon for the feature
      */
     icon?:
       | (
@@ -1067,17 +1067,17 @@ export interface WhyChooseUsBlock {
         )
       | null;
     /**
-     * Цвет градиента для карточки
+     * Gradient color for the card
      */
     gradientColor?: ('blue' | 'green' | 'purple' | 'orange' | 'pink' | 'yellow' | 'cyan' | 'red') | null;
     id?: string | null;
   }[];
   /**
-   * Способ отображения преимуществ
+   * Display mode for features
    */
   layout?: ('grid' | 'list' | 'carousel') | null;
   /**
-   * Количество колонок в сетке
+   * Number of columns in the grid
    */
   columns?: number | null;
   id?: string | null;
@@ -1135,7 +1135,7 @@ export interface TestResult {
    */
   timeSpent?: number | null;
   /**
-   * Прошел ли пользователь тест
+   * Whether the user passed the test
    */
   isPassed?: boolean | null;
   /**
@@ -2109,15 +2109,15 @@ export interface Header {
   id: number;
   logo?: {
     /**
-     * Логотип, который будет отображаться на светлом фоне
+     * Logo that will be displayed on light background
      */
     light?: (number | null) | Media;
     /**
-     * Логотип, который будет отображаться на темном фоне
+     * Logo that will be displayed on dark background
      */
     dark?: (number | null) | Media;
     /**
-     * Опциональный логотип для мобильных устройств. Если не указан, будет использоваться логотип светлой темы
+     * Optional logo for mobile devices. If not specified, the light theme logo will be used
      */
     mobile?: (number | null) | Media;
   };

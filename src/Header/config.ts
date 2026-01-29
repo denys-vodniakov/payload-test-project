@@ -12,34 +12,34 @@ export const Header: GlobalConfig = {
     {
       name: 'logo',
       type: 'group',
-      label: 'Логотип',
+      label: 'Logo',
       fields: [
         {
           name: 'light',
           type: 'upload',
           relationTo: 'media',
-          label: 'Логотип для светлой темы',
+          label: 'Logo for light theme',
           admin: {
-            description: 'Логотип, который будет отображаться на светлом фоне',
+            description: 'Logo that will be displayed on light background',
           },
         },
         {
           name: 'dark',
           type: 'upload',
           relationTo: 'media',
-          label: 'Логотип для темной темы',
+          label: 'Logo for dark theme',
           admin: {
-            description: 'Логотип, который будет отображаться на темном фоне',
+            description: 'Logo that will be displayed on dark background',
           },
         },
         {
           name: 'mobile',
           type: 'upload',
           relationTo: 'media',
-          label: 'Логотип для мобильных устройств (опционально)',
+          label: 'Logo for mobile devices (optional)',
           admin: {
             description:
-              'Опциональный логотип для мобильных устройств. Если не указан, будет использоваться логотип светлой темы',
+              'Optional logo for mobile devices. If not specified, the light theme logo will be used',
           },
           required: false,
         },

@@ -62,7 +62,7 @@ export const hero: Field = {
       type: 'text',
       admin: {
         condition: (_, { type } = {}) => type === 'modernHero',
-        description: 'Подзаголовок для hero секции',
+        description: 'Subtitle for hero section',
       },
     },
     linkGroup({
@@ -85,7 +85,7 @@ export const hero: Field = {
       defaultValue: false,
       admin: {
         condition: (_, { type } = {}) => type === 'modernHero',
-        description: 'Показать статистику',
+        description: 'Show statistics',
       },
     },
     {
@@ -93,7 +93,7 @@ export const hero: Field = {
       type: 'array',
       admin: {
         condition: (_, { type, showStats } = {}) => type === 'modernHero' && showStats,
-        description: 'Статистика для отображения',
+        description: 'Statistics to display',
       },
       fields: [
         {
@@ -101,7 +101,7 @@ export const hero: Field = {
           type: 'text',
           required: true,
           admin: {
-            description: 'Значение (например: "1000+")',
+            description: 'Value (e.g., "1000+")',
           },
         },
         {
@@ -109,7 +109,7 @@ export const hero: Field = {
           type: 'text',
           required: true,
           admin: {
-            description: 'Подпись (например: "Questions in database")',
+            description: 'Label (e.g., "Questions in database")',
           },
         },
         {

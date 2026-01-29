@@ -6,26 +6,26 @@ export async function POST(_request: NextRequest) {
   try {
     const payload = await getPayload({ config: configPromise })
 
-    // Создаем тестовые вопросы
+    // Create test questions
     const questions = [
       {
-        question: 'Что такое React Hook?',
+        question: 'What is a React Hook?',
         category: 'react' as const,
         difficulty: 'easy' as const,
         options: [
           {
-            text: 'Функция, которая позволяет использовать состояние и другие возможности React в функциональных компонентах',
+            text: 'A function that allows you to use state and other React features in functional components',
             isCorrect: true,
           },
-          { text: 'Классовый компонент React', isCorrect: false },
-          { text: 'Метод для создания анимаций', isCorrect: false },
-          { text: 'Инструмент для тестирования', isCorrect: false },
+          { text: 'A class component in React', isCorrect: false },
+          { text: 'A method for creating animations', isCorrect: false },
+          { text: 'A testing tool', isCorrect: false },
         ],
         explanation:
-          'React Hooks - это функции, которые позволяют использовать состояние и другие возможности React в функциональных компонентах.',
+          'React Hooks are functions that allow you to use state and other React features in functional components.',
       },
       {
-        question: 'Какой хук используется для управления состоянием в функциональных компонентах?',
+        question: 'Which hook is used to manage state in functional components?',
         category: 'react' as const,
         difficulty: 'easy' as const,
         options: [
@@ -35,23 +35,23 @@ export async function POST(_request: NextRequest) {
           { text: 'useReducer', isCorrect: false },
         ],
         explanation:
-          'useState - это хук для управления локальным состоянием в функциональных компонентах.',
+          'useState is a hook for managing local state in functional components.',
       },
       {
-        question: 'Что такое Server Components в Next.js 13+?',
+        question: 'What are Server Components in Next.js 13+?',
         category: 'nextjs' as const,
         difficulty: 'medium' as const,
         options: [
-          { text: 'Компоненты, которые рендерятся на сервере', isCorrect: true },
-          { text: 'Компоненты, которые работают только на клиенте', isCorrect: false },
-          { text: 'Компоненты для API роутов', isCorrect: false },
-          { text: 'Компоненты для middleware', isCorrect: false },
+          { text: 'Components that render on the server', isCorrect: true },
+          { text: 'Components that only work on the client', isCorrect: false },
+          { text: 'Components for API routes', isCorrect: false },
+          { text: 'Components for middleware', isCorrect: false },
         ],
         explanation:
-          'Server Components рендерятся на сервере и позволяют выполнять серверную логику прямо в компонентах.',
+          'Server Components render on the server and allow you to execute server-side logic directly in components.',
       },
       {
-        question: 'Какой метод используется для создания нового элемента в React?',
+        question: 'Which method is used to create a new element in React?',
         category: 'react' as const,
         difficulty: 'easy' as const,
         options: [
@@ -60,23 +60,23 @@ export async function POST(_request: NextRequest) {
           { text: 'React.makeElement()', isCorrect: false },
           { text: 'React.buildElement()', isCorrect: false },
         ],
-        explanation: 'React.createElement() - это метод для создания React элементов.',
+        explanation: 'React.createElement() is the method for creating React elements.',
       },
       {
-        question: 'Что такое TypeScript?',
+        question: 'What is TypeScript?',
         category: 'typescript' as const,
         difficulty: 'easy' as const,
         options: [
-          { text: 'Типизированная надстройка над JavaScript', isCorrect: true },
-          { text: 'Новый язык программирования', isCorrect: false },
-          { text: 'Фреймворк для React', isCorrect: false },
-          { text: 'Инструмент для тестирования', isCorrect: false },
+          { text: 'A typed superset of JavaScript', isCorrect: true },
+          { text: 'A new programming language', isCorrect: false },
+          { text: 'A framework for React', isCorrect: false },
+          { text: 'A testing tool', isCorrect: false },
         ],
         explanation:
-          'TypeScript - это типизированная надстройка над JavaScript, которая добавляет статическую типизацию.',
+          'TypeScript is a typed superset of JavaScript that adds static typing.',
       },
       {
-        question: 'Какой синтаксис используется для деструктуризации в JavaScript?',
+        question: 'What syntax is used for object destructuring in JavaScript?',
         category: 'javascript' as const,
         difficulty: 'easy' as const,
         options: [
@@ -86,24 +86,24 @@ export async function POST(_request: NextRequest) {
           { text: 'const name = person.name, age = person.age', isCorrect: false },
         ],
         explanation:
-          'Деструктуризация объектов использует фигурные скобки {} для извлечения свойств.',
+          'Object destructuring uses curly braces {} to extract properties.',
       },
       {
-        question: 'Что такое CSS Grid?',
+        question: 'What is CSS Grid?',
         category: 'css-html' as const,
         difficulty: 'medium' as const,
         options: [
-          { text: 'Двумерная система компоновки для CSS', isCorrect: true },
-          { text: 'Одномерная система компоновки', isCorrect: false },
-          { text: 'Система анимаций', isCorrect: false },
-          { text: 'Система для работы с цветами', isCorrect: false },
+          { text: 'A two-dimensional layout system for CSS', isCorrect: true },
+          { text: 'A one-dimensional layout system', isCorrect: false },
+          { text: 'An animation system', isCorrect: false },
+          { text: 'A color management system', isCorrect: false },
         ],
         explanation:
-          'CSS Grid - это двумерная система компоновки, которая позволяет создавать сложные макеты.',
+          'CSS Grid is a two-dimensional layout system that allows you to create complex layouts.',
       },
       {
         question:
-          'Какой метод массива создает новый массив с результатами вызова функции для каждого элемента?',
+          'Which array method creates a new array with the results of calling a function for every element?',
         category: 'javascript' as const,
         difficulty: 'easy' as const,
         options: [
@@ -113,23 +113,23 @@ export async function POST(_request: NextRequest) {
           { text: 'forEach()', isCorrect: false },
         ],
         explanation:
-          'map() создает новый массив с результатами вызова функции для каждого элемента.',
+          'map() creates a new array with the results of calling a function for every element.',
       },
       {
-        question: 'Что такое Virtual DOM в React?',
+        question: 'What is Virtual DOM in React?',
         category: 'react',
         difficulty: 'medium',
         options: [
-          { text: 'Легковесная копия реального DOM', isCorrect: true },
-          { text: 'Реальный DOM элемент', isCorrect: false },
-          { text: 'Компонент React', isCorrect: false },
-          { text: 'Хук React', isCorrect: false },
+          { text: 'A lightweight copy of the real DOM', isCorrect: true },
+          { text: 'A real DOM element', isCorrect: false },
+          { text: 'A React component', isCorrect: false },
+          { text: 'A React hook', isCorrect: false },
         ],
         explanation:
-          'Virtual DOM - это легковесная копия реального DOM, которая используется для оптимизации обновлений.',
+          'Virtual DOM is a lightweight copy of the real DOM that is used to optimize updates.',
       },
       {
-        question: 'Какой хук используется для выполнения побочных эффектов?',
+        question: 'Which hook is used for performing side effects?',
         category: 'react' as const,
         difficulty: 'easy' as const,
         options: [
@@ -139,11 +139,11 @@ export async function POST(_request: NextRequest) {
           { text: 'useMemo', isCorrect: false },
         ],
         explanation:
-          'useEffect используется для выполнения побочных эффектов в функциональных компонентах.',
+          'useEffect is used for performing side effects in functional components.',
       },
     ]
 
-    // Создаем вопросы в базе данных
+    // Create questions in the database
     const createdQuestions: any[] = []
     for (const questionData of questions) {
       const question = await payload.create({
@@ -153,11 +153,11 @@ export async function POST(_request: NextRequest) {
       createdQuestions.push(question)
     }
 
-    // Создаем тесты
+    // Create tests
     const tests = [
       {
-        title: 'Основы React',
-        description: 'Тест по основам React, включая компоненты, хуки и состояние',
+        title: 'React Fundamentals',
+        description: 'Test on React basics, including components, hooks, and state',
         category: 'react' as const,
         difficulty: 'easy' as const,
         timeLimit: 15,
@@ -167,7 +167,7 @@ export async function POST(_request: NextRequest) {
       },
       {
         title: 'JavaScript ES6+',
-        description: 'Тест по современным возможностям JavaScript',
+        description: 'Test on modern JavaScript features',
         category: 'javascript' as const,
         difficulty: 'medium' as const,
         timeLimit: 20,
@@ -177,7 +177,7 @@ export async function POST(_request: NextRequest) {
       },
       {
         title: 'Next.js 15',
-        description: 'Тест по новым возможностям Next.js 15',
+        description: 'Test on new Next.js 15 features',
         category: 'nextjs' as const,
         difficulty: 'medium' as const,
         timeLimit: 25,
@@ -186,8 +186,8 @@ export async function POST(_request: NextRequest) {
         passingScore: 80,
       },
       {
-        title: 'TypeScript Основы',
-        description: 'Тест по основам TypeScript',
+        title: 'TypeScript Basics',
+        description: 'Test on TypeScript fundamentals',
         category: 'typescript' as const,
         difficulty: 'easy' as const,
         timeLimit: 15,
@@ -196,8 +196,8 @@ export async function POST(_request: NextRequest) {
         passingScore: 70,
       },
       {
-        title: 'CSS Grid и Flexbox',
-        description: 'Тест по современным методам компоновки в CSS',
+        title: 'CSS Grid and Flexbox',
+        description: 'Test on modern CSS layout methods',
         category: 'css-html' as const,
         difficulty: 'medium' as const,
         timeLimit: 20,
@@ -206,8 +206,8 @@ export async function POST(_request: NextRequest) {
         passingScore: 75,
       },
       {
-        title: 'Полный стек разработчик',
-        description: 'Комплексный тест по всем технологиям',
+        title: 'Full Stack Developer',
+        description: 'Comprehensive test covering all technologies',
         category: 'mixed' as const,
         difficulty: 'hard' as const,
         timeLimit: 45,
@@ -217,7 +217,7 @@ export async function POST(_request: NextRequest) {
       },
     ]
 
-    // Создаем тесты в базе данных
+    // Create tests in the database
     const createdTests: any[] = []
     for (const testData of tests) {
       const test = await payload.create({
@@ -228,7 +228,7 @@ export async function POST(_request: NextRequest) {
     }
 
     return NextResponse.json({
-      message: 'Тестовые данные успешно созданы',
+      message: 'Test data successfully created',
       questions: createdQuestions.length,
       tests: createdTests.length,
     })

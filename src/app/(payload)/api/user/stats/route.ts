@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
 
     const payload = await getPayload({ config: configPromise })
 
-    // Проверяем Bearer токен из заголовка
+    // Check Bearer token from header
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7) // Remove "Bearer " prefix
 
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
 
         // Use short timeout for local request
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 2000) // 2 с екунды таймаут
+        const timeoutId = setTimeout(() => controller.abort(), 2000) // 2 seconds timeout
 
         const meUserReq = await fetch(`${origin}/api/users/me`, {
           headers: {
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
           }
         }
       } catch (error: any) {
-        // Если это таймаут, логируем, но не падаем
+        // If it's a timeout, log but don't crash
         if (error.name === 'AbortError' || error.code === 'UND_ERR_HEADERS_TIMEOUT') {
           console.error('Timeout when fetching user from cookie:', error)
         } else {

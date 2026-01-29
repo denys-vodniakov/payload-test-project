@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'User not found' }, { status: 404 })
       }
 
-      // Возвращаем данные пользователя без пароля
+      // Return user data without password
       const { password: _, ...userWithoutPassword } = user
 
       return NextResponse.json({

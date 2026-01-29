@@ -108,7 +108,7 @@ export const TestResults: CollectionConfig = {
       type: 'checkbox',
       defaultValue: false,
       admin: {
-        description: 'Прошел ли пользователь тест',
+        description: 'Whether the user passed the test',
       },
     },
     {
