@@ -130,7 +130,8 @@ export const useTestStore = create<TestState>()(
         if (!currentTest) return []
         
         const answers = [...currentTest.answers]
-        set({ currentTest: null })
+        // Note: Store is cleared via resetTest() after successful submission
+        // flushSync ensures React state updates before resetTest is called
         return answers
       },
       
